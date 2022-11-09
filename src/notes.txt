@@ -1,0 +1,7 @@
+
+COLOR KEY:
+0 - (w)hite
+1 - bl(u)e
+2 - (g)reen
+3 - (r)ed
+4 - blac(k)
