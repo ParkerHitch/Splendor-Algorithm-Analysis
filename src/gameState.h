@@ -32,13 +32,13 @@ struct PlayerState {
     int playerNum;
     Card* ownedCards[50];//IDs of cards. Max 50 before u get 15 pts
     Card* reservedCards[3];
-    int balance0;
-    int balance1;
-    int balance2;
-    int balance3;
-    int balance4;
-    int balanceY;
-    int* balance = &balance0;
+    Noble* nobles[5];//Max before 15 pts;
+    int balance0 = 0;
+    int balance1 = 0;
+    int balance2 = 0;
+    int balance3 = 0;
+    int balance4 = 0;
+    int balanceY = 999;
 };
 
 struct GameState {
@@ -64,7 +64,6 @@ struct GameState {
             bankAmt3 = 7,
             bankAmt4 = 7,
             bankAmtY = 5;
-    int* bank = &bankAmt0;
 
     PlayerState playerStates[4]{};
 

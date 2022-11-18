@@ -8,6 +8,7 @@
 using namespace std;
 
 void printGS(GameState& gs){
+    system("clear");
     cout << BLD UDL "GAME STATE" RST << endl <<
         "Round " << gs.turn/4 <<  " - Player" << gs.turn%4 << " turn" << endl;
     printBank(gs);
@@ -70,6 +71,14 @@ void printPS(PlayerState& ps){
          " " FG_RED << ps.balance3 <<
          " " FG_BLK << ps.balance4 <<
          " " FG_YEL << ps.balanceY << RST << endl;
-    for(int i=0; ps.ownedCards[i]!=nullptr; i++)
+    for(int i=0; ps.ownedCards[i]!=nullptr; i++) {
+        cout << "  ";
         printC(*ps.ownedCards[i]);
+    }
+    if(ps.reservedCards[0]!= nullptr)
+        cout << "  " UDL "reserved" RST << endl;
+    for(int i=0; ps.reservedCards[i]!=nullptr; i++) {
+        cout << "    ";
+        printC(*ps.reservedCards[i]);
+    }
 }

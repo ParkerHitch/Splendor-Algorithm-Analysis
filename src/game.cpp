@@ -25,13 +25,12 @@ void startGame(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n){
     printGS(gameState);
     while(!gameState.isTerminal) {
         takeTurn();
+        gameState.turn++;
         printGS(gameState);
     }
 
     for(Player*& player : players)
         free(player);
-
-    printGS(gameState);
 }
 
 void takeTurn(){
@@ -42,24 +41,53 @@ void takeTurn(){
     applyAction(pa);
 }
 
+bool checkWin(PlayerState& ps){
+    int b = 0;
+    int pts = 0;
+    while(ps.ownedCards[b]!=nullptr)
+        pts+=ps.ownedCards[b++]->points;//Add points & increment id
+    b=0;
+    while(ps.nobles[b]!=nullptr)
+        pts+=ps.nobles[b++]->points;//Add points & increment id
+    return pts>=15;
+}
+
 bool validAction(GameAction &ga) {
     switch (ga.type) {
         case ERROR:
             return true;
         case TAKE3:
-            return  gameState.bank[ga.suit1] > 0 &&
-                    gameState.bank[ga.suit2] > 0 &&
-                    gameState.bank[ga.suit3] > 0;
+            return  (&gameState.bankAmt0)[ga.suit1] > 0 &&
+                    (&gameState.bankAmt0)[ga.suit2] > 0 &&
+                    (&gameState.bankAmt0)[ga.suit3] > 0;
         case TAKE1:
-            return gameState.bank[ga.suit1] > 4;//MINIMUM FOR TAKING TWO (RULE)
+            return (&gameState.bankAmt0)[ga.suit1] >= 4;//Minimum for taking two (game rule)
         case RESERVE:
             if(gameState.playerStates[ga.playerId].reservedCards[2] != nullptr)
                 return false;
         case PURCHASE:
-            Card** row = ga.id<40? gameState.D1Showing : ga.id<70? gameState.D2Showing : gameState.D3Showing;
-            for(int i = 0; i<4; i++)
-                if(row[i]->id==ga.id)
-                    return true;
+            for(int i = 0; i<12; i++)
+                if(gameState.D1Showing[i]->id==ga.id){
+                    if(ga.type==PURCHASE) {
+                        int diff = 0; //# of coins missing
+                        for (int i = 0; i < 5; i++) {
+                            diff += max(0, (&(gameState.D1Showing[i]->cost0))[i] -
+                                           (&gameState.playerStates[ga.playerId].balance0)[i]);
+                        }
+                        return diff <= gameState.playerStates[ga.playerId].balanceY;
+                    }
+                    return true;//Found in flipped and reserving
+                }
+            //Card is not flipped on table. If we are buying it could be in our reserved
+            if(ga.type==PURCHASE)
+                for(Card* card : gameState.playerStates[ga.playerId].reservedCards)
+                    if(card->id==ga.id){
+                        int diff = 0; //# of coins missing
+                        for (int i = 0; i < 5; i++)
+                            diff += max(0, (&(gameState.D1Showing[i]->cost0))[i] -
+                                           (&gameState.playerStates[ga.playerId].balance0)[i]);
+                        return diff <= gameState.playerStates[ga.playerId].balanceY;
+                    }
             return false;
     }
 }
@@ -71,34 +99,65 @@ void applyAction(GameAction &ga) {
             gameState.isTerminal = true;
             break;
         case TAKE3:
-            gameState.bank[ga.suit1] -= 1;
-            gameState.bank[ga.suit2] -= 1;
-            gameState.bank[ga.suit3] -= 1;
-            ps.balance[ga.suit1] += 1;
-            ps.balance[ga.suit2] += 1;
-            ps.balance[ga.suit3] += 1;
+            (&gameState.bankAmt0)[ga.suit1] -= 1;
+            (&gameState.bankAmt0)[ga.suit2] -= 1;
+            (&gameState.bankAmt0)[ga.suit3] -= 1;
+            (&ps.balance0)[ga.suit1] += 1;
+            (&ps.balance0)[ga.suit2] += 1;
+            (&ps.balance0)[ga.suit3] += 1;
             break;
         case TAKE1:
-            gameState.bank[ga.suit1] -= 2;
-            gameState.playerStates[ga.playerId].balance[ga.suit1] += 2;
+            (&gameState.bankAmt0)[ga.suit1] -= 2;
+            (&ps.balance0)[ga.suit1] += 2;
             break;
         case RESERVE:
+            if(gameState.bankAmtY>0){
+                ps.balanceY+=1;
+                gameState.bankAmtY-=1;
+            }
         case PURCHASE:
-            Card** end = ga.type==PURCHASE?ps.ownedCards:ps.reservedCards;
-            int dNum = ga.id<40? 0 : ga.id<70? 1 : 2;
+            Card** end = ga.type==PURCHASE?ps.ownedCards:ps.reservedCards;//Where the card ends up
             for(int i = 0; i<12; i++)
                 if(gameState.D1Showing[i]->id==ga.id){
                     int b = 0;
                     while(end[b]!=nullptr)
                         b++;
+                    //Give player card
                     end[b] = gameState.D1Showing[i];
-                    flipCard(gameState, dNum, i%4);
+                    if(ga.type==PURCHASE){
+                        //Subtract cost from player. Assumed that player wants to conserve wilds.
+                        for (int s=0; s<5; s++) {
+                            (&ps.balance0)[s] -= (&(gameState.D1Showing[i]->cost0))[s];
+                            ps.balanceY += min(0,(&ps.balance0)[s]);
+                            (&ps.balance0)[s] = max(0,(&ps.balance0)[s]);
+                        }
+                    }
+                    flipCard(gameState, i/4, i%4);
                     return;
                 }
+            //Card not in flipped cards. Must be purchasing from reserves bc move is valid
+            for(int c=0; c<3; c++)
+                if(ps.reservedCards[c]->id==ga.id){
+                    for (int s=0; s<5; s++) {
+                        (&ps.balance0)[s] -= (&(ps.reservedCards[c]->cost0))[s];
+                        ps.balanceY += min(0,(&ps.balance0)[s]);
+                        (&ps.balance0)[s] = max(0,(&ps.balance0)[s]);
+                    }
+                    int b = 0;
+                    while(end[b]!=nullptr)
+                        b++;
+                    ps.ownedCards[b] = ps.reservedCards[c];
+                    //Remove & shift left
+                    ps.reservedCards[c] = nullptr;
+                    while(c<2){
+                        ps.reservedCards[c] = ps.reservedCards[++c];
+                    }
+                    ps.reservedCards[2] = nullptr;
+                }
             break;
-
     }
-    gameState.turn++;
+    //Check win. Not in purchase because you could buy one turn and be able to be visited by 2 nobles. Next turn could be visited by second without purchasing.
+    gameState.isTerminal = checkWin(ps);
 }
 
 
