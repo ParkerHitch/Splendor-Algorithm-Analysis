@@ -133,7 +133,7 @@ void applyAction(GameAction &ga) {
                         }
                     }
                     flipCard(gameState, i/4, i%4);
-                    return;
+                    goto nobleCheck;
                 }
             //Card not in flipped cards. Must be purchasing from reserves bc move is valid
             for(int c=0; c<3; c++)
@@ -149,13 +149,43 @@ void applyAction(GameAction &ga) {
                     ps.ownedCards[b] = ps.reservedCards[c];
                     //Remove & shift left
                     ps.reservedCards[c] = nullptr;
-                    while(c<2){
-                        ps.reservedCards[c] = ps.reservedCards[++c];
+                    while(c<2) {
+                        ps.reservedCards[c] = ps.reservedCards[c + 1];
+                        c++;
                     }
                     ps.reservedCards[2] = nullptr;
                 }
             break;
     }
+    //Check for Noble visits
+    nobleCheck:
+    int a[5]={};
+    for(int b=0; ps.ownedCards[b]!=nullptr; b++)
+        a[ps.ownedCards[b]->suit]++;
+    //cout << a[0] << a[1] << a[2] << a[3] << a[4];
+    for(int c=0; c<5; c++) {
+        if (gameState.noblesShowing[c] == nullptr)
+            break;
+
+        for(int s=0; s<5; s++)
+             if(a[s]<(&(gameState.noblesShowing[c]->cost0))[s])
+                 goto nextN;
+        //Noble attracted
+        for(Noble*& pn : ps.nobles)
+            if(pn==nullptr){
+                pn = gameState.noblesShowing[c];
+                break;
+            }
+        //Remove & shift left
+        gameState.noblesShowing[c] = nullptr;
+        while (c < 4){
+            gameState.noblesShowing[c] = gameState.noblesShowing[c+1];
+            c++;
+        }
+        gameState.noblesShowing[4] = nullptr;
+        nextN: ;
+    }
+
     //Check win. Not in purchase because you could buy one turn and be able to be visited by 2 nobles. Next turn could be visited by second without purchasing.
     gameState.isTerminal = checkWin(ps);
 }
@@ -176,7 +206,7 @@ bool flipCard(GameState& gs, int dNum, int newPos) {
 bool flipNoble(GameState &gs, int newPos) {
     if(gs.iN>=10)
         return false;
-    gs.NoblesShowing[newPos] = &(gs.nobles[gs.iN]);
+    gs.noblesShowing[newPos] = &(gs.nobles[gs.iN]);
     gs.iN++;
     return true;
 }

@@ -8,7 +8,7 @@
 using namespace std;
 
 void printGS(GameState& gs){
-    system("clear");
+    //system("clear");
     cout << BLD UDL "GAME STATE" RST << endl <<
         "Round " << gs.turn/4 <<  " - Player" << gs.turn%4 << " turn" << endl;
     printBank(gs);
@@ -21,9 +21,9 @@ void printGS(GameState& gs){
     cout << BLD UDL "Deck3 - " << 20-gs.iD3 << " left" RST << endl;
     for(Card*& c : gs.D3Showing)
         printC(*c);
-    cout << BLD UDL "Nobles - " << 10-gs.iN << " left" RST << endl;
-    for(Noble*& n : gs.NoblesShowing)
-        printN(*n);
+    cout << BLD UDL "Nobles" RST << endl;// - " << 10-gs.iN << " left" RST << endl;
+    for(int n=0; n<5&&gs.noblesShowing[n]!=nullptr; n++)
+        printN(*gs.noblesShowing[n]);
     cout << endl;
     for(PlayerState& ps : gs.playerStates)
         printPS(ps);
@@ -80,5 +80,11 @@ void printPS(PlayerState& ps){
     for(int i=0; ps.reservedCards[i]!=nullptr; i++) {
         cout << "    ";
         printC(*ps.reservedCards[i]);
+    }
+    if(ps.nobles[0]!= nullptr)
+        cout << "  " UDL "nobles" RST << endl;
+    for(int i=0; ps.nobles[i]!=nullptr; i++) {
+        cout << "    ";
+        printN(*ps.nobles[i]);
     }
 }
