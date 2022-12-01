@@ -22,4 +22,7 @@ struct GameAction{
     int id;
 };
 
+GameAction randomAction();
+GameAction randomValidAction();
+
 #endif //RESEARCH_GAMEACTION_H

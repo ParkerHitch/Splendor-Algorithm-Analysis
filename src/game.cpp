@@ -8,7 +8,7 @@
 #include "Players/Player.h"
 
 GameState gameState = GameState{};
-Player* players[4];
+Player* players[K_PNUM];
 
 void startGame(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n){
     loadAndShuffleDecks(gameState, d1, d2, d3, n);
@@ -19,8 +19,8 @@ void startGame(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n){
         flipNoble(gameState, i);
 
     //TODO: ADD CODE FOR REAL SETUP CONFIG STUFF
-    for(int i=0; i<4; i++)
-        players[i] = new HumanPlayer(i);
+    for(int i=0; i < K_PNUM; i++)
+        players[i] = new RandomPlayer(i);
 
     printGS(gameState);
     while(!gameState.isTerminal) {
@@ -36,8 +36,9 @@ void startGame(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n){
 void takeTurn(){
     GameAction pa;//PLAYER ACTION
     do {
-        pa = players[gameState.turn % 4]->takeAction(gameState);
+        pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
     } while(!validAction(pa));
+    printAction(pa);
     applyAction(pa);
 }
 
@@ -57,39 +58,41 @@ bool validAction(GameAction &ga) {
         case ERROR:
             return true;
         case TAKE3:
-            return  (&gameState.bankAmt0)[ga.suit1] > 0 &&
-                    (&gameState.bankAmt0)[ga.suit2] > 0 &&
-                    (&gameState.bankAmt0)[ga.suit3] > 0;
+            return  ga.suit1!=ga.suit2 && ga.suit2!=ga.suit3 && ga.suit1!=ga.suit3;// &&
+//                    (&gameState.bankAmt0)[ga.suit1] > 0 &&
+//                    (&gameState.bankAmt0)[ga.suit2] > 0 &&
+//                    (&gameState.bankAmt0)[ga.suit3] > 0;
         case TAKE1:
             return (&gameState.bankAmt0)[ga.suit1] >= 4;//Minimum for taking two (game rule)
         case RESERVE:
             if(gameState.playerStates[ga.playerId].reservedCards[2] != nullptr)
                 return false;
         case PURCHASE:
-            for(int i = 0; i<12; i++)
-                if(gameState.D1Showing[i]->id==ga.id){
-                    if(ga.type==PURCHASE) {
-                        int diff = 0; //# of coins missing
-                        for (int i = 0; i < 5; i++) {
-                            diff += max(0, (&(gameState.D1Showing[i]->cost0))[i] -
-                                           (&gameState.playerStates[ga.playerId].balance0)[i]);
-                        }
-                        return diff <= gameState.playerStates[ga.playerId].balanceY;
-                    }
+            for(int c=0; c < 12; c++)
+                if(gameState.D1Showing[c]->id == ga.id){
+                    if(ga.type==PURCHASE)
+                        return canBuy(gameState.playerStates[ga.playerId], *gameState.D1Showing[c]);
                     return true;//Found in flipped and reserving
                 }
             //Card is not flipped on table. If we are buying it could be in our reserved
             if(ga.type==PURCHASE)
-                for(Card* card : gameState.playerStates[ga.playerId].reservedCards)
+                for(Card* card : gameState.playerStates[ga.playerId].reservedCards){
+                    if(card==nullptr)
+                        return false;
                     if(card->id==ga.id){
-                        int diff = 0; //# of coins missing
-                        for (int i = 0; i < 5; i++)
-                            diff += max(0, (&(gameState.D1Showing[i]->cost0))[i] -
-                                           (&gameState.playerStates[ga.playerId].balance0)[i]);
-                        return diff <= gameState.playerStates[ga.playerId].balanceY;
+                        return canBuy(gameState.playerStates[ga.playerId], *card);
                     }
+                }
             return false;
     }
+}
+
+bool canBuy(PlayerState &ps, Card &card) {
+    int diff = 0; //# of coins missing
+    for (int suit=0; suit < 5; suit++)
+        diff += max(0, (&card.cost0)[suit] - ps.discounts[suit] - //HAVE TO PAY
+                       (&ps.balance0)[suit]); //HAVE IN BANK
+    return diff <= ps.balanceY;
 }
 
 void applyAction(GameAction &ga) {
@@ -98,14 +101,18 @@ void applyAction(GameAction &ga) {
         case ERROR:
             gameState.isTerminal = true;
             break;
-        case TAKE3:
-            (&gameState.bankAmt0)[ga.suit1] -= 1;
-            (&gameState.bankAmt0)[ga.suit2] -= 1;
-            (&gameState.bankAmt0)[ga.suit3] -= 1;
-            (&ps.balance0)[ga.suit1] += 1;
-            (&ps.balance0)[ga.suit2] += 1;
-            (&ps.balance0)[ga.suit3] += 1;
+        case TAKE3: { // FOR VARIABLE SCOPE
+            int d1 = min(1, (&gameState.bankAmt0)[ga.suit1]); // if bank amt = 0 d1 = 0 else d1 = 1
+            int d2 = min(1, (&gameState.bankAmt0)[ga.suit2]);
+            int d3 = min(1, (&gameState.bankAmt0)[ga.suit3]);
+            (&gameState.bankAmt0)[ga.suit1] -= d1;
+            (&gameState.bankAmt0)[ga.suit2] -= d2;
+            (&gameState.bankAmt0)[ga.suit3] -= d3;
+            (&ps.balance0)[ga.suit1] += d1;
+            (&ps.balance0)[ga.suit2] += d2;
+            (&ps.balance0)[ga.suit3] += d3;
             break;
+        }
         case TAKE1:
             (&gameState.bankAmt0)[ga.suit1] -= 2;
             (&ps.balance0)[ga.suit1] += 2;
@@ -127,10 +134,21 @@ void applyAction(GameAction &ga) {
                     if(ga.type==PURCHASE){
                         //Subtract cost from player. Assumed that player wants to conserve wilds.
                         for (int s=0; s<5; s++) {
-                            (&ps.balance0)[s] -= (&(gameState.D1Showing[i]->cost0))[s];
-                            ps.balanceY += min(0,(&ps.balance0)[s]);
+                            //SUBTRACT AMOUNT YOU NEED TO PAY
+                            int amtToPay = max(0,(&(gameState.D1Showing[i]->cost0))[s] - ps.discounts[s]);
+                            (&ps.balance0)[s] -= amtToPay;
+                            //If you need to pay more than you have, your balance will be negative
+                            //Missing = how many wilds you need to pay
+                            int missing = -1*min(0,(&ps.balance0)[s]);
+                            //Add amt you need to pay minus how many wilds you pay
+                            (&(gameState.bankAmt0))[s] += amtToPay - missing;
+                            gameState.bankAmtY += missing;
+                            //Correct for wilds
+                            ps.balanceY -= missing;
                             (&ps.balance0)[s] = max(0,(&ps.balance0)[s]);
                         }
+                        //Add to discount
+                        ps.discounts[gameState.D1Showing[i]->suit]++;
                     }
                     flipCard(gameState, i/4, i%4);
                     goto nobleCheck;
@@ -139,14 +157,25 @@ void applyAction(GameAction &ga) {
             for(int c=0; c<3; c++)
                 if(ps.reservedCards[c]->id==ga.id){
                     for (int s=0; s<5; s++) {
-                        (&ps.balance0)[s] -= (&(ps.reservedCards[c]->cost0))[s];
-                        ps.balanceY += min(0,(&ps.balance0)[s]);
+                        //SUBTRACT AMOUNT YOU NEED TO PAY
+                        int amtToPay = max(0,(&(ps.reservedCards[c]->cost0))[s] - ps.discounts[s]);
+                        (&ps.balance0)[s] -= amtToPay;
+                        //If you need to pay more than you have, your balance will be negative
+                        //Missing = how many wilds you need to pay
+                        int missing = -1*min(0,(&ps.balance0)[s]);
+                        //Add amt you need to pay minus how many wilds you pay
+                        (&(gameState.bankAmt0))[s] += amtToPay - missing;
+                        gameState.bankAmtY += missing;
+                        //Correct for wilds
+                        ps.balanceY -= missing;
                         (&ps.balance0)[s] = max(0,(&ps.balance0)[s]);
                     }
                     int b = 0;
                     while(end[b]!=nullptr)
                         b++;
                     ps.ownedCards[b] = ps.reservedCards[c];
+                    //Add to discount
+                    ps.discounts[ps.reservedCards[c]->suit]++;
                     //Remove & shift left
                     ps.reservedCards[c] = nullptr;
                     while(c<2) {
@@ -192,21 +221,19 @@ void applyAction(GameAction &ga) {
 
 
 //HELPER UNIMPORTANT BAD FUNCTIONS BELOW THIS LINE. WE DISCRIMINATE!
-bool flipCard(GameState& gs, int dNum, int newPos) {
+void flipCard(GameState& gs, int dNum, int newPos) {
     //POINTS TO START OF DECK
     Card* deck = dNum==0? gs.deck1 : dNum==1? gs.deck2 : gs.deck3;
     Card** row = dNum==0? gs.D1Showing : dNum==1? gs.D2Showing : gs.D3Showing;
     int* index = dNum==0? &gs.iD1 : dNum==1? &gs.iD2 : &gs.iD3;
-    if(*index>=20+10*dNum)
-        return false;
+    if(*index>=40-10*dNum){
+        row[newPos] = nullptr;
+        return;
+    }
     row[newPos] = &(deck[*index]);
     (*index)++;
-    return true;
 }
-bool flipNoble(GameState &gs, int newPos) {
-    if(gs.iN>=10)
-        return false;
+void flipNoble(GameState &gs, int newPos) { //Only used in setup.
     gs.noblesShowing[newPos] = &(gs.nobles[gs.iN]);
     gs.iN++;
-    return true;
 }

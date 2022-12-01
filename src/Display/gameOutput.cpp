@@ -4,23 +4,22 @@
 #include <iostream>
 #include "gameOutput.h"
 #include "consoleColors.h"
-
 using namespace std;
 
 void printGS(GameState& gs){
     //system("clear");
     cout << BLD UDL "GAME STATE" RST << endl <<
-        "Round " << gs.turn/4 <<  " - Player" << gs.turn%4 << " turn" << endl;
+         "Round " << gs.turn / K_PNUM << " - Player" << gs.turn % K_PNUM << " turn" << endl;
     printBank(gs);
     cout << BLD UDL "Deck1 - " << 40-gs.iD1 << " left" RST << endl;
     for(Card*& c : gs.D1Showing)
-        printC(*c);
+        printC(c);
     cout << BLD UDL "Deck2 - " << 30-gs.iD2 << " left" RST << endl;
     for(Card*& c : gs.D2Showing)
-        printC(*c);
+        printC(c);
     cout << BLD UDL "Deck3 - " << 20-gs.iD3 << " left" RST << endl;
     for(Card*& c : gs.D3Showing)
-        printC(*c);
+        printC(c);
     cout << BLD UDL "Nobles" RST << endl;// - " << 10-gs.iN << " left" RST << endl;
     for(int n=0; n<5&&gs.noblesShowing[n]!=nullptr; n++)
         printN(*gs.noblesShowing[n]);
@@ -39,7 +38,10 @@ void printBank(GameState& gs){
         " " FG_YEL << gs.bankAmtY << RST << endl;
 }
 
-void printC(Card& c){
+void printC(Card* card){
+    if(card == nullptr)
+        return;
+    Card& c = *card;
     cout << "[" BLD FG_WHT << c.id
                             //NO SUIT 0 BC IT LOOKS BETTER ON MY MACHINE
         << RST "-" BLD << (c.suit==0?"":c.suit==1?FG_BLU:c.suit==2?FG_GRN:c.suit==3?FG_RED:FG_BLK) << c.points
@@ -65,7 +67,7 @@ void printN(Noble& n){
 
 void printPS(PlayerState& ps){
     cout << BLD "Player" << ps.playerNum << ": " RST <<
-         ps.balance0 <<
+                                      ps.balance0 <<
          " " FG_BLU << ps.balance1 <<
          " " FG_GRN << ps.balance2 <<
          " " FG_RED << ps.balance3 <<
@@ -73,13 +75,13 @@ void printPS(PlayerState& ps){
          " " FG_YEL << ps.balanceY << RST << endl;
     for(int i=0; ps.ownedCards[i]!=nullptr; i++) {
         cout << "  ";
-        printC(*ps.ownedCards[i]);
+        printC(ps.ownedCards[i]);
     }
     if(ps.reservedCards[0]!= nullptr)
         cout << "  " UDL "reserved" RST << endl;
     for(int i=0; ps.reservedCards[i]!=nullptr; i++) {
         cout << "    ";
-        printC(*ps.reservedCards[i]);
+        printC(ps.reservedCards[i]);
     }
     if(ps.nobles[0]!= nullptr)
         cout << "  " UDL "nobles" RST << endl;
@@ -87,4 +89,32 @@ void printPS(PlayerState& ps){
         cout << "    ";
         printN(*ps.nobles[i]);
     }
+}
+
+inline const char* ToString(actionType v) {
+    switch (v) {
+        case TAKE3: return "TAKE3";
+        case TAKE1: return "TAKE1";
+        case RESERVE: return "RESERVE";
+        case PURCHASE: return "PURCHASE";
+        case ERROR: return "ERROR";
+    }
+}
+void printAction(GameAction &pa) {
+    cout << ToString(pa.type) << " ";
+    switch (pa.type) {
+        case TAKE3:
+            cout << pa.suit1 << pa.suit2 << pa.suit3;
+            break;
+        case TAKE1:
+            cout << pa.suit1;
+            break;
+        case RESERVE:
+        case PURCHASE:
+            cout << pa.id;
+            break;
+        case ERROR:
+            break;
+    }
+    cout << endl;
 }

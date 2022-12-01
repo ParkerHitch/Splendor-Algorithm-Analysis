@@ -4,6 +4,8 @@
 #ifndef RESEARCH_GAME_H
 #define RESEARCH_GAME_H
 
+#define K_PNUM 4
+
 using namespace std;
 
 #include "gameState.h"
@@ -14,7 +16,9 @@ void takeTurn();
 void applyAction(GameAction& ga);
 bool validAction(GameAction& ga);
 
-bool flipCard(GameState& gs, int dNum, int newPos);
-bool flipNoble(GameState& gs, int newPos);
+bool canBuy(PlayerState& ps, Card& card);
+
+void flipCard(GameState& gs, int dNum, int newPos);
+void flipNoble(GameState& gs, int newPos);
 
 #endif //RESEARCH_GAME_H

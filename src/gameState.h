@@ -2,6 +2,7 @@
 // Created by Parker Hitchcock on 11/3/22.
 //
 #include <fstream>
+#include "game.h"
 
 #ifndef RESEARCH_GAMESTATE_H
 #define RESEARCH_GAMESTATE_H
@@ -31,6 +32,7 @@ const Noble* findNoble(int id);
 struct PlayerState {
     int playerNum;
     Card* ownedCards[50];//IDs of cards. Max 50 before u get 15 pts
+    int discounts[5]={};
     Card* reservedCards[3];
     Noble* nobles[5];//Max
     int balance0 = 0;
@@ -65,8 +67,7 @@ struct GameState {
             bankAmt4 = 7,
             bankAmtY = 5;
 
-    PlayerState playerStates[4]{};
-
+    PlayerState playerStates[K_PNUM]{};
     int turn = 0;
 };
 

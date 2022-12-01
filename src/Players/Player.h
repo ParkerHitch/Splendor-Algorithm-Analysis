@@ -11,13 +11,19 @@
 class Player {
 public:
     const int id;
-    Player(int i);
+    explicit Player(int i);
     virtual GameAction takeAction(GameState& gs)=0;
 };
 
 class HumanPlayer: public Player {
 public:
-    HumanPlayer(int i);
+    using Player::Player;
+    GameAction takeAction(GameState& gs) override;
+};
+
+class RandomPlayer: public Player {
+public:
+    using Player::Player;
     GameAction takeAction(GameState& gs) override;
 };
 
