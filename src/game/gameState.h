@@ -1,8 +1,7 @@
 //
 // Created by Parker Hitchcock on 11/3/22.
 //
-#include <fstream>
-#include "game.h"
+#include "../utils/config.h"
 
 #ifndef RESEARCH_GAMESTATE_H
 #define RESEARCH_GAMESTATE_H

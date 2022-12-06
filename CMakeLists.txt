@@ -3,4 +3,4 @@ project(Research)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Research src/main.cpp src/game.h src/game.cpp src/gameState.h src/Display/gameOutput.cpp src/Display/gameOutput.h src/Display/consoleColors.h src/Players/HumanPlayer.cpp src/Players/Player.h src/gameSetup.cpp src/gameSetup.h src/gameAction.h src/Players/agents/RandomPlayer.cpp src/gameAction.cpp)
+add_executable(Research src/main.cpp src/game/game.h src/game/game.cpp src/game/gameState.h src/display/gameOutput.cpp src/display/gameOutput.h src/display/consoleColors.h src/players/HumanPlayer.cpp src/players/Player.h src/game/gameSetup.cpp src/game/gameSetup.h src/game/gameAction.h src/players/agents/RandomPlayer.cpp src/game/gameAction.cpp src/utils/config.h)

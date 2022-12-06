@@ -5,8 +5,8 @@
 #ifndef RESEARCH_PLAYER_H
 #define RESEARCH_PLAYER_H
 
-#include "../gameAction.h"
-#include "../gameState.h"
+#include "../game/gameAction.h"
+#include "../game/gameState.h"
 
 class Player {
 public:

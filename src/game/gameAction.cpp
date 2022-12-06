@@ -1,9 +1,9 @@
 //
 // Created by Parker Hitchcock on 11/23/22.
 //
+#include <random>
 #include "gameAction.h"
 #include "gameState.h"
-#include <random>
 
 using namespace std;
 

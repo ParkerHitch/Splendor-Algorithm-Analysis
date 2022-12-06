@@ -5,8 +5,8 @@
 #ifndef RESEARCH_GAMEOUTPUT_H
 #define RESEARCH_GAMEOUTPUT_H
 
-#include "../gameState.h"
-#include "../gameAction.h"
+#include "../game/gameState.h"
+#include "../game/gameAction.h"
 
 void printC(Card* c);
 void printN(Noble& n);
