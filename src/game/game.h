@@ -19,7 +19,12 @@ public:
     Game* usePlayer(int n, Player* player);
     Game* usePlayers(Player* players[K_PNUM]);
     Game* shuffleDecks();
-    void runGame();
+
+    int runGame();
+    int runGameDebug();
+
+    int getTurn();
+    bool hasWinner();
 
 private:
     Game() = default;

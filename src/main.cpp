@@ -24,7 +24,35 @@ int main() {
     for(int i=0; i < K_PNUM; i++)
         players[i] = new RandomPlayer(i);
 
-    Game::fromGS(&baseGS)->usePlayers(players)->runGame();
+    int results[K_PNUM] = {0,0,0,0};
+    long tNum = 0;
+    int stale = 0;
+
+    int barWidth = 50;
+    int num = 100000;
+
+    for(int i=0; i<num; i++) {
+        Game* cg = Game::fromGS(&baseGS)->usePlayers(players);
+        int w = cg->runGame();
+        if(cg->hasWinner()){
+            results[w]++;
+            tNum += cg->getTurn();
+        } else
+            stale++;
+        std::cout << "[";
+        int pos = barWidth * i / num;
+        for (int i = 0; i < barWidth; ++i) {
+            if (i < pos) std::cout << "=";
+            else if (i == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int((float)i/(float)num * 100.0) << " %\r";
+        std::cout.flush();
+    }
+
+    cout << results[0] << "," << results[1] << "," << results[2] << "," << results[3] << endl;
+    cout << tNum << endl;
+    cout << stale;
 
     for(Player* p : players)
         free(p);

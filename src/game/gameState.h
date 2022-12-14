@@ -44,6 +44,7 @@ struct PlayerState {
 
 struct GameState {
     bool isTerminal = false;//WIN
+    bool isStale = false;
 
     Card deck1[40]{};
     int iD1 = 0; //Which card to draw next. NOT ID. LIST INDEX

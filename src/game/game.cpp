@@ -32,14 +32,24 @@ Game* Game::usePlayers(Player* pls[K_PNUM]) {
     return this;
 }
 
-void Game::runGame() {
+int Game::runGame() {
+    while (!gameState.isTerminal && !gameState.isStale) {
+        takeTurn();
+        gameState.turn++;
+    }
+    //cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
+    return (gameState.turn-1)%4;
+}
+
+int Game::runGameDebug() {
     printGS(gameState);
-    while (!gameState.isTerminal) {
+    while (!gameState.isTerminal && !gameState.isStale) {
         takeTurn();
         gameState.turn++;
         printGS(gameState);
     }
     cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
+    return (gameState.turn-1)%4;
 }
 
 void Game::takeTurn() {
@@ -47,7 +57,7 @@ void Game::takeTurn() {
     do {
         pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
     } while (!validAction(pa));
-    printAction(pa);
+    //printAction(pa);
     applyAction(pa);
 }
 
@@ -57,7 +67,7 @@ bool Game::checkWin(PlayerState &ps) {
     while (ps.ownedCards[b] != nullptr)
         pts += ps.ownedCards[b++]->points;//Add points & increment id
     b = 0;
-    while (ps.nobles[b] != nullptr)
+    while (b < 5 && ps.nobles[b] != nullptr)
         pts += ps.nobles[b++]->points;//Add points & increment id
     return pts >= 15;
 }
@@ -232,6 +242,7 @@ void Game::applyAction(GameAction &ga) {
 
     //Check win. Not in purchase because you could buy one turn and be able to be visited by 2 nobles. Next turn could be visited by second without purchasing.
     gameState.isTerminal = checkWin(ps);
+    gameState.isStale = gameState.turn >= 2000;
 }
 
 //HELPER UNIMPORTANT BAD FUNCTIONS BELOW THIS LINE. WE DISCRIMINATE!
@@ -262,4 +273,12 @@ void Game::flipCard(int dNum, int newPos) {
 void Game::flipNoble(int newPos) { //Only used in setup.
     gameState.noblesShowing[newPos] = &(gameState.nobles[gameState.iN]);
     gameState.iN++;
+}
+
+//EVEN WORSE... GETTERS AND SETTERS 😱
+int Game::getTurn() {
+    return gameState.turn;
+}
+bool Game::hasWinner() {
+    return gameState.isTerminal;
 }
