@@ -4,7 +4,6 @@
 #include "../Player.h"
 
 GameAction RandomPlayer::takeAction(GameState &gs) {
-    GameAction ga = randomAction();
-    ga.playerId = this->id;
+    GameAction ga = randomValidAction(gs);
     return ga;
 }

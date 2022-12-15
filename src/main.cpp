@@ -31,7 +31,7 @@ int main() {
     int barWidth = 50;
     int num = 100000;
 
-    for(int i=0; i<num; i++) {
+    for(int n=0; n<num; n++) {
         Game* cg = Game::fromGS(&baseGS)->usePlayers(players);
         int w = cg->runGame();
         if(cg->hasWinner()){
@@ -40,13 +40,13 @@ int main() {
         } else
             stale++;
         std::cout << "[";
-        int pos = barWidth * i / num;
+        int pos = barWidth * n / num;
         for (int i = 0; i < barWidth; ++i) {
             if (i < pos) std::cout << "=";
             else if (i == pos) std::cout << ">";
             else std::cout << " ";
         }
-        std::cout << "] " << int((float)i/(float)num * 100.0) << " %\r";
+        std::cout << "] " << int((float)n/(float)num * 100.0) << " %\r";
         std::cout.flush();
     }
 

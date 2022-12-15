@@ -104,11 +104,11 @@ void printAction(GameAction &pa) {
     cout << ToString(pa.type) << " ";
     switch (pa.type) {
         case TAKE3:
-            cout << pa.suit1 << pa.suit2 << pa.suit3;
-            break;
+            printTake3(pa);
+            return;
         case TAKE1:
-            cout << pa.suit1;
-            break;
+            printTake2(pa);
+            return;
         case RESERVE:
         case PURCHASE:
             cout << pa.id;
@@ -117,4 +117,22 @@ void printAction(GameAction &pa) {
             break;
     }
     cout << endl;
+}
+
+void printActions(vector<GameAction>& actions){
+    for(GameAction& action : actions)
+        printAction(action);
+}
+
+void printTake3(GameAction& T3){
+    cout << "[ "
+         << (T3.suit1==0?"":T3.suit1==1?FG_BLU:T3.suit1==2?FG_GRN:T3.suit1==3?FG_RED:FG_BLK) << T3.suit1 << " " RST
+         << (T3.suit2==0?"":T3.suit2==1?FG_BLU:T3.suit2==2?FG_GRN:T3.suit2==3?FG_RED:FG_BLK) << T3.suit2 << " " RST
+         << (T3.suit3==0?"":T3.suit3==1?FG_BLU:T3.suit3==2?FG_GRN:T3.suit3==3?FG_RED:FG_BLK) << T3.suit3
+         << " " RST "] " << endl;
+}
+
+void printTake2(GameAction& T2){
+    cout << "[ "
+         << (T2.suit1==0?"":T2.suit1==1?FG_BLU:T2.suit1==2?FG_GRN:T2.suit1==3?FG_RED:FG_BLK) << T2.suit1 << RST " ] " << endl;
 }

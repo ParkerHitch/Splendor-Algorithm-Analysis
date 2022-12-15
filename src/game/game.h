@@ -26,17 +26,20 @@ public:
     int getTurn();
     bool hasWinner();
 
+    static bool canAfford(PlayerState& ps, Card& card);
+    static bool checkWin(PlayerState &ps);
 private:
     Game() = default;
 
     GameState gameState = GameState{};
     Player* players[K_PNUM];
+    vector<GameAction> possibleActions;
+
+    int staleStreak = 0;
 
     void takeTurn();
     void applyAction(GameAction& ga);
     bool validAction(GameAction& ga);
-    static bool canAfford(PlayerState& ps, Card& card);
-    static bool checkWin(PlayerState &ps);
 
     void flipCard(int dNum, int newPos);
     void flipNoble(int newPos);

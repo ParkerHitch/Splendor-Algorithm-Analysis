@@ -54,11 +54,19 @@ int Game::runGameDebug() {
 
 void Game::takeTurn() {
     GameAction pa;//PLAYER ACTION
-    do {
-        pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
-    } while (!validAction(pa));
-    //printAction(pa);
-    applyAction(pa);
+    possibleActions = validActions(gameState);
+    if(!possibleActions.empty()) {
+        //printActions(possibleActions);
+        staleStreak = 0;
+        do {
+            pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
+        } while (!validAction(pa));
+        applyAction(pa);
+    } else
+        staleStreak ++;
+    gameState.isTerminal = checkWin(gameState.playerStates[pa.playerId]);
+    if (staleStreak>=4)
+        gameState.isStale=true;
 }
 
 bool Game::checkWin(PlayerState &ps) {
@@ -73,40 +81,41 @@ bool Game::checkWin(PlayerState &ps) {
 }
 
 bool Game::validAction(GameAction &ga) {
-    switch (ga.type) {
-        case ERROR:
-            return true;
-        case TAKE3:
-            return ga.suit1 != ga.suit2 && ga.suit2 != ga.suit3 && ga.suit1 != ga.suit3;// &&
-//                    (&gameState.bankAmt0)[ga.suit1] > 0 &&
-//                    (&gameState.bankAmt0)[ga.suit2] > 0 &&
-//                    (&gameState.bankAmt0)[ga.suit3] > 0;
-        case TAKE1:
-            return (&gameState.bankAmt0)[ga.suit1] >= 4;//Minimum for taking two (game rule)
-        case RESERVE:
-            if (gameState.playerStates[ga.playerId].reservedCards[2] != nullptr)
-                return false;
-        case PURCHASE:
-            for (int c = 0; c < 12; c++) {
-                if (gameState.D1Showing[c] == nullptr)
-                    continue;
-                if (gameState.D1Showing[c]->id == ga.id) {
-                    if (ga.type == PURCHASE)
-                        return canAfford(gameState.playerStates[ga.playerId], *gameState.D1Showing[c]);
-                    return true;//Found in flipped and reserving
-                }
-            }
-            //Card is not flipped on table. If we are buying it could be in our reserved
-            if (ga.type == PURCHASE)
-                for (Card *card: gameState.playerStates[ga.playerId].reservedCards) {
-                    if (card == nullptr)
-                        return false;
-                    if (card->id == ga.id) {
-                        return canAfford(gameState.playerStates[ga.playerId], *card);
-                    }
-                }
-            return false;
-    }
+    return any_of(possibleActions.begin(), possibleActions.end(), [&ga](GameAction a){return a==ga;});
+//    switch (ga.type) {
+//        case ERROR:
+//            return true;
+//        case TAKE3:
+//            return ga.suit1 != ga.suit2 && ga.suit2 != ga.suit3 && ga.suit1 != ga.suit3;// &&
+////                    (&gameState.bankAmt0)[ga.suit1] > 0 &&
+////                    (&gameState.bankAmt0)[ga.suit2] > 0 &&
+////                    (&gameState.bankAmt0)[ga.suit3] > 0;
+//        case TAKE1:
+//            return (&gameState.bankAmt0)[ga.suit1] >= 4;//Minimum for taking two (game rule)
+//        case RESERVE:
+//            if (gameState.playerStates[ga.playerId].reservedCards[2] != nullptr)
+//                return false;
+//        case PURCHASE:
+//            for (int c = 0; c < 12; c++) {
+//                if (gameState.D1Showing[c] == nullptr)
+//                    continue;
+//                if (gameState.D1Showing[c]->id == ga.id) {
+//                    if (ga.type == PURCHASE)
+//                        return canAfford(gameState.playerStates[ga.playerId], *gameState.D1Showing[c]);
+//                    return true;//Found in flipped and reserving
+//                }
+//            }
+//            //Card is not flipped on table. If we are buying it could be in our reserved
+//            if (ga.type == PURCHASE)
+//                for (Card *card: gameState.playerStates[ga.playerId].reservedCards) {
+//                    if (card == nullptr)
+//                        return false;
+//                    if (card->id == ga.id) {
+//                        return canAfford(gameState.playerStates[ga.playerId], *card);
+//                    }
+//                }
+//            return false;
+//    }
 }
 
 bool Game::canAfford(PlayerState &ps, Card &card) {
@@ -123,18 +132,23 @@ void Game::applyAction(GameAction &ga) {
         case ERROR:
             gameState.isTerminal = true;
             break;
-        case TAKE3: { // FOR VARIABLE SCOPE
-            int d1 = min(1, (&gameState.bankAmt0)[ga.suit1]); // if bank amt = 0 d1 = 0 else d1 = 1
-            int d2 = min(1, (&gameState.bankAmt0)[ga.suit2]);
-            int d3 = min(1, (&gameState.bankAmt0)[ga.suit3]);
-            (&gameState.bankAmt0)[ga.suit1] -= d1;
-            (&gameState.bankAmt0)[ga.suit2] -= d2;
-            (&gameState.bankAmt0)[ga.suit3] -= d3;
-            (&ps.balance0)[ga.suit1] += d1;
-            (&ps.balance0)[ga.suit2] += d2;
-            (&ps.balance0)[ga.suit3] += d3;
+        case TAKE3:
+            if (ga.suit1!=-1) {
+                int d1 = min(1, (&gameState.bankAmt0)[ga.suit1]); // if bank amt = 0 d1 = 0 else d1 = 1
+                (&gameState.bankAmt0)[ga.suit1] -= d1;
+                (&ps.balance0)[ga.suit1] += d1;
+            }
+            if(ga.suit2!=-1) {
+                int d2 = min(1, (&gameState.bankAmt0)[ga.suit2]);
+                (&gameState.bankAmt0)[ga.suit2] -= d2;
+                (&ps.balance0)[ga.suit2] += d2;
+            }
+            if(ga.suit3!=-1) {
+                int d3 = min(1, (&gameState.bankAmt0)[ga.suit3]);
+                (&gameState.bankAmt0)[ga.suit3] -= d3;
+                (&ps.balance0)[ga.suit3] += d3;
+            }
             break;
-        }
         case TAKE1:
             (&gameState.bankAmt0)[ga.suit1] -= 2;
             (&ps.balance0)[ga.suit1] += 2;
@@ -213,16 +227,12 @@ void Game::applyAction(GameAction &ga) {
     }
     //Check for Noble visits
     nobleCheck:
-    int a[5] = {};
-    for (int b = 0; ps.ownedCards[b] != nullptr; b++)
-        a[ps.ownedCards[b]->suit]++;
-    //cout << a[0] << a[1] << a[2] << a[3] << a[4];
     for (int c = 0; c < 5; c++) {
         if (gameState.noblesShowing[c] == nullptr)
             break;
 
         for (int s = 0; s < 5; s++)
-            if (a[s] < (&(gameState.noblesShowing[c]->cost0))[s])
+            if (ps.discounts[s] < (&(gameState.noblesShowing[c]->cost0))[s])
                 goto nextN;
         //Noble attracted
         for (Noble *&pn: ps.nobles)
@@ -237,12 +247,9 @@ void Game::applyAction(GameAction &ga) {
             c++;
         }
         gameState.noblesShowing[4] = nullptr;
+        break; //ONE PER TURN
         nextN:;
     }
-
-    //Check win. Not in purchase because you could buy one turn and be able to be visited by 2 nobles. Next turn could be visited by second without purchasing.
-    gameState.isTerminal = checkWin(ps);
-    gameState.isStale = gameState.turn >= 2000;
 }
 
 //HELPER UNIMPORTANT BAD FUNCTIONS BELOW THIS LINE. WE DISCRIMINATE!
