@@ -1,9 +1,25 @@
 #include <iostream>
 #include <string>
+#include <thread>
 #include "game/game.h"
 using namespace std;
 
 const string assetsDir = "../assets/";
+
+#define K_THREADNUM 10
+
+void runGame(GameState* baseGS, Player** players, int* output, int nGames){
+    for(int n=0; n<nGames; n++) {
+        Game* cg = Game::fromGS(baseGS)->usePlayers(players)->shuffleDecks();
+        int w = cg->runGame();
+        output[0]++;
+        if(cg->hasWinner()){
+            output[w+1]++;
+            output[5] += cg->getTurn(); //Nturns
+        } else
+            output[6]++; //Stale
+    }
+}
 
 int main() {
     ifstream deck1(assetsDir + "default/decks/1.csv");
@@ -24,14 +40,28 @@ int main() {
     for(int i=0; i < K_PNUM; i++)
         players[i] = new RandomPlayer(i);
 
-    int results[K_PNUM] = {0,0,0,0};
+    int nGames = 1000000;
+    int gPerThread = nGames/K_THREADNUM;
+    int results[K_PNUM] = {};
     long tNum = 0;
     int stale = 0;
 
-    int barWidth = 50;
-    int num = 100000;
+    thread threads[K_THREADNUM];
+    int output[K_THREADNUM*7] = {};
 
-    for(int n=0; n<num; n++) {
+    for(int t = 0; t < K_THREADNUM; t++){
+        threads[t] = thread(runGame, &baseGS, players, output + t*7, nGames/K_THREADNUM);
+    }
+
+
+    int barWidth = 50;
+    int totalProgress = 0;
+
+    while (totalProgress<nGames){
+        totalProgress = 0;
+        for(int t = 0; t < K_THREADNUM; t++)
+            totalProgress += output[t*7];
+
         Game* cg = Game::fromGS(&baseGS)->usePlayers(players);
         int w = cg->runGame();
         if(cg->hasWinner()){
@@ -40,14 +70,25 @@ int main() {
         } else
             stale++;
         std::cout << "[";
-        int pos = barWidth * n / num;
+        int pos = barWidth * totalProgress / nGames;
         for (int i = 0; i < barWidth; ++i) {
             if (i < pos) std::cout << "=";
             else if (i == pos) std::cout << ">";
             else std::cout << " ";
         }
-        std::cout << "] " << int((float)n/(float)num * 100.0) << " %\r";
+        std::cout << "] " << int((float)totalProgress/(float)nGames * 100.0) << " %\r";
         std::cout.flush();
+    }
+
+    for(int i=0; auto& th: threads){
+        th.join();
+        results[0] += output[i*7 + 1];
+        results[1] += output[i*7 + 2];
+        results[2] += output[i*7 + 3];
+        results[3] += output[i*7 + 4];
+        tNum += output[i*7 + 5];
+        stale += output[i*7 + 6];
+        i++;
     }
 
     cout << results[0] << "," << results[1] << "," << results[2] << "," << results[3] << endl;

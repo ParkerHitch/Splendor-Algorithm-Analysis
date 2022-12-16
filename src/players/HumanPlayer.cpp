@@ -29,7 +29,7 @@ int getNumber(const char* prompt, int min, int max){
     return x;
 }
 
-GameAction HumanPlayer::takeAction(GameState &gs) {
+GameAction HumanPlayer::takeAction(GameState &gs, vector<GameAction>& gas) {
     GameAction ga = {.playerId = id};
     cout << "Player" << id << " turn." << endl;
     //cout << "(0->P3,1->P1,2->R,3->B,4->EXIT) Enter action type (0-4): ";

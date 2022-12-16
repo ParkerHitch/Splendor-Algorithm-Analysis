@@ -28,15 +28,15 @@ struct GameAction{
     bool operator==( const GameAction& other ) const {
         return type     == other.type &&
                playerId == other.playerId &&
-               suit1    == other.suit1 &&
-               suit2    == other.suit2 &&
-               suit3    == other.suit3 &&
-               id       == other.id;
+               type==TAKE1 ? suit1==other.suit1 :
+               type==TAKE3 ? suit1==other.suit1&&suit2==other.suit2&&suit3==other.suit3 :
+               id == other.id;
     }
 };
 
 GameAction randomAction();
 GameAction randomValidAction(GameState& gs);
+GameAction randomValidAction(vector<GameAction> gas);
 
 vector<GameAction> validActions(GameState& gs);
 

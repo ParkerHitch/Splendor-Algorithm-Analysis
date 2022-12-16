@@ -12,19 +12,19 @@ class Player {
 public:
     const int id;
     explicit Player(int i);
-    virtual GameAction takeAction(GameState& gs)=0;
+    virtual GameAction takeAction(GameState& gs, vector<GameAction>& gas)=0;
 };
 
 class HumanPlayer: public Player {
 public:
     using Player::Player;
-    GameAction takeAction(GameState& gs) override;
+    GameAction takeAction(GameState& gs, vector<GameAction>& gas) override;
 };
 
 class RandomPlayer: public Player {
 public:
     using Player::Player;
-    GameAction takeAction(GameState& gs) override;
+    GameAction takeAction(GameState& gs, vector<GameAction>& gas) override;
 };
 
 #endif //RESEARCH_PLAYER_H

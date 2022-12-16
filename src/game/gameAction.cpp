@@ -1,11 +1,9 @@
 //
 // Created by Parker Hitchcock on 11/23/22.
 //
-#include <random>
 #include "gameAction.h"
 #include "../utils/Math.h"
 #include "game.h"
-#include <iostream>
 
 using namespace std;
 
@@ -27,11 +25,15 @@ GameAction randomAction() {
 }
 
 GameAction randomValidAction(GameState& gs) {
+    vector<GameAction> gas = validActions(gs);
+    return randomValidAction(gas);
+}
+
+GameAction randomValidAction(vector<GameAction> gas){
     if(start) {
         srand(time(nullptr));
         start = false;
     }
-    vector<GameAction> gas = validActions(gs);
     return gas[rand() % gas.size()];
 }
 

@@ -59,7 +59,7 @@ void Game::takeTurn() {
         //printActions(possibleActions);
         staleStreak = 0;
         do {
-            pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
+            pa = players[gameState.turn % K_PNUM]->takeAction(gameState, possibleActions);
         } while (!validAction(pa));
         applyAction(pa);
     } else
@@ -261,6 +261,14 @@ Game* Game::shuffleDecks(){
     shuffle((gameState.deck2), end(gameState.deck2), rnd);
     shuffle((gameState.deck3), end(gameState.deck3), rnd);
     shuffle((gameState.nobles), end(gameState.nobles), rnd);
+    gameState.iD1 = 0;
+    gameState.iD2 = 0;
+    gameState.iD3 = 0;
+    for (int d = 0; d < 3; d++)
+        for (int p = 0; p < 4; p++)
+            flipCard(d, p);
+    for (int i = 0; i < 5; i++)
+        flipNoble(i);
     return this;
 }
 

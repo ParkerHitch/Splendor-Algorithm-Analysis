@@ -3,7 +3,7 @@
 //
 #include "../Player.h"
 
-GameAction RandomPlayer::takeAction(GameState &gs) {
-    GameAction ga = randomValidAction(gs);
+GameAction RandomPlayer::takeAction(GameState &gs, vector<GameAction>& gas) {
+    GameAction ga = randomValidAction(gas);
     return ga;
 }
