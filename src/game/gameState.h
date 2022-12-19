@@ -1,10 +1,17 @@
 //
 // Created by Parker Hitchcock on 11/3/22.
 //
-#include "../utils/config.h"
 
 #ifndef RESEARCH_GAMESTATE_H
 #define RESEARCH_GAMESTATE_H
+
+using namespace std;
+
+#include <vector>
+#include "../utils/config.h"
+#include "gameAction.h"
+
+struct GameAction;
 
 struct Card {
     int id;
@@ -15,6 +22,7 @@ struct Card {
     int cost2;
     int cost3;
     int cost4;
+    static Card fromLine(const string& line, int id);
 };
 
 struct Noble {
@@ -25,8 +33,8 @@ struct Noble {
     int cost2;
     int cost3;
     int cost4;
+    static Noble fromLine(const string& line, int id);
 };
-const Noble* findNoble(int id);
 
 struct PlayerState {
     int playerNum;
@@ -40,6 +48,9 @@ struct PlayerState {
     int balance3 = 0;
     int balance4 = 0;
     int balanceY = 0;
+
+    bool canAfford(Card& card);
+    bool checkWin();
 };
 
 struct GameState {
@@ -69,6 +80,29 @@ struct GameState {
 
     PlayerState playerStates[K_PNUM]{};
     int turn = 0;
+
+    vector<GameAction> possibleActions;
+    int staleStreak = 0;
+
+    //METHODS:
+    void updatePossibleActions();
+    bool hasValidAction() const;
+    bool isValidAction(GameAction& ga);
+    void applyAction(GameAction& ga);
+    void advanceTurn();
+
+    static GameState newGame(GameState& gs);
+    //Implicit Copy Constructor: GameState(GameState& gs);
+    GameState(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n);
+    GameState()=default;
+
+private:
+
+
+    void shuffleAndFlip();
+
+    void flipCard(int dNum, int newPos);
+    void flipNoble(int newPos);
 };
 
 #endif //RESEARCH_GAMESTATE_H
