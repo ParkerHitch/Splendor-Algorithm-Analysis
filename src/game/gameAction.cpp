@@ -93,7 +93,7 @@ void addValidBuysAndReserves(GameState& gs, vector<GameAction>& gas){
             if(card == nullptr)
                 continue;
             gas.push_back(GameAction{.type=RESERVE, .playerId=ps.playerNum, .id=card->id});
-            if(Game::canAfford(ps, *card))
+            if(ps.canAfford(*card))
                 gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .id=card->id});
         }
     } else {
@@ -101,13 +101,13 @@ void addValidBuysAndReserves(GameState& gs, vector<GameAction>& gas){
             Card* card = gs.D1Showing[c];
             if (card== nullptr)
                 continue;
-            if(Game::canAfford(ps, *card))
+            if(ps.canAfford(*card))
                 gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .id=card->id});
         }
     }
     for(int c=0; c<3 && ps.reservedCards[c]!=nullptr; c++){
         Card* card = ps.reservedCards[c];
-        if(Game::canAfford(ps, *card))
+        if(ps.canAfford(*card))
             gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .id=card->id});
     }
 }

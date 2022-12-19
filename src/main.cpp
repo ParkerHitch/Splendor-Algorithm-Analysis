@@ -1,16 +1,18 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <thread>
 #include "game/game.h"
+
 using namespace std;
 
 const string assetsDir = "../assets/";
 
 #define K_THREADNUM 10
 
-void runGame(GameState* baseGS, Player** players, int* output, int nGames){
+void runGame(GameState baseGS, Player** players, int* output, int nGames){
     for(int n=0; n<nGames; n++) {
-        Game* cg = Game::fromGS(baseGS)->usePlayers(players)->shuffleDecks();
+        Game* cg = Game::newFromGS(baseGS)->usePlayers(players);
         int w = cg->runGame();
         output[0]++;
         if(cg->hasWinner()){
@@ -18,6 +20,7 @@ void runGame(GameState* baseGS, Player** players, int* output, int nGames){
             output[5] += cg->getTurn(); //Nturns
         } else
             output[6]++; //Stale
+        free(cg);
     }
 }
 
@@ -30,7 +33,7 @@ int main() {
     GameState baseGS;
 
     if (deck1.is_open() && deck2.is_open() && deck3.is_open() && noble.is_open()) {
-        baseGS = newGameFromFilesShuffled(deck1, deck2, deck3, noble);
+        baseGS = GameState(deck1, deck2, deck3, noble);
     } else {
         cout << "Unable to open file(s)";
         return 0;
@@ -41,7 +44,7 @@ int main() {
         players[i] = new RandomPlayer(i);
 
     int nGames = 1000000;
-    int gPerThread = nGames/K_THREADNUM;
+    //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;
     int stale = 0;
@@ -50,9 +53,8 @@ int main() {
     int output[K_THREADNUM*7] = {};
 
     for(int t = 0; t < K_THREADNUM; t++){
-        threads[t] = thread(runGame, &baseGS, players, output + t*7, nGames/K_THREADNUM);
+        threads[t] = thread(runGame, baseGS, players, output + t*7, nGames/K_THREADNUM);
     }
-
 
     int barWidth = 50;
     int totalProgress = 0;
@@ -62,13 +64,6 @@ int main() {
         for(int t = 0; t < K_THREADNUM; t++)
             totalProgress += output[t*7];
 
-        Game* cg = Game::fromGS(&baseGS)->usePlayers(players);
-        int w = cg->runGame();
-        if(cg->hasWinner()){
-            results[w]++;
-            tNum += cg->getTurn();
-        } else
-            stale++;
         std::cout << "[";
         int pos = barWidth * totalProgress / nGames;
         for (int i = 0; i < barWidth; ++i) {
