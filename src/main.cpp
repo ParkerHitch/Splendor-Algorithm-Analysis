@@ -40,10 +40,12 @@ int main() {
     }
 
     Player* players[K_PNUM];
-    for(int i=0; i < K_PNUM; i++)
-        players[i] = new RandomPlayer(i);
+    players[0] = new RandomPlayer(0);
+    players[1] = new RandomPlayer(1);
+    players[2] = new RandomPlayer(2);
+    players[3] = new OSLA_V1(3);
 
-    int nGames = 1000000;
+    int nGames = 100000;
     //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;

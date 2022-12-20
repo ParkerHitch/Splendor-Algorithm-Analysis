@@ -55,6 +55,7 @@ void Game::takeTurn() {
         do {
             pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
         } while (!gameState.isValidAction(pa));
+        //printAction(pa);
         gameState.applyAction(pa);
     } else
         gameState.staleStreak ++;

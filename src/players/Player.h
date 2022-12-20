@@ -32,7 +32,7 @@ public:
     using Player::Player;
     GameAction takeAction(GameState& gs) override;
 
-    float evaluate(GameState &gs);
+    float evaluate(GameState &gs, GameAction& ga);
 };
 
 #endif //RESEARCH_PLAYER_H
