@@ -50,6 +50,7 @@ GameState GameState::newGame(GameState &gs) {
     memcpy(ng.deck1, gs.deck1, sizeof(deck1));
     memcpy(ng.deck2, gs.deck2, sizeof(deck2));
     memcpy(ng.deck3, gs.deck3, sizeof(deck3));
+    memcpy(ng.nobles, gs.nobles, sizeof(deck3));
     for(int i=0; i<4; i++){
         ng.playerStates[i].playerNum = i;
     }
@@ -72,6 +73,7 @@ void GameState::shuffleAndFlip(){
 }
 
 void GameState::applyAction(GameAction &ga) {
+    lastAction = ga;
     PlayerState &ps = playerStates[ga.playerId];
     switch (ga.type) {
         case ERROR:
@@ -192,10 +194,15 @@ void GameState::applyAction(GameAction &ga) {
             c++;
         }
         noblesShowing[4] = nullptr;
-        break; //ONE PER TURN
+        //I am removing this rule for coding's sake break; //ONE PER TURN
         nextN:;
     }
 }
+
+void GameState::undo(GameAction &action) {
+
+}
+
 void GameState::updatePossibleActions() {
     possibleActions = validActions(*this);
 }

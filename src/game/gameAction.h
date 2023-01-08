@@ -5,10 +5,9 @@
 #ifndef RESEARCH_GAMEACTION_H
 #define RESEARCH_GAMEACTION_H
 
-using namespace std;
-
 #include <vector>
-#include "gameState.h"
+
+using namespace std;
 
 struct GameState;
 

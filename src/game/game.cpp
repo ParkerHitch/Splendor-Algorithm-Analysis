@@ -50,18 +50,17 @@ int Game::runGameDebug() {
 void Game::takeTurn() {
     GameAction pa;//PLAYER ACTION
     if(gameState.hasValidAction()) {
-        //printActions(possibleActions);
-        gameState.staleStreak = 0;
+        //printActions(gameState.possibleActions);
         do {
             pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
         } while (!gameState.isValidAction(pa));
         //printAction(pa);
         gameState.applyAction(pa);
-    } else
-        gameState.staleStreak ++;
+    } else {
+        if (gameState.lastAction.playerId == gameState.turn % K_PNUM)
+            gameState.isStale=true;
+    }
     gameState.isTerminal = gameState.playerStates[pa.playerId].checkWin();
-    if (gameState.staleStreak>=4)
-        gameState.isStale=true;
     gameState.advanceTurn();
     gameState.updatePossibleActions();
 }

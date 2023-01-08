@@ -9,7 +9,7 @@ using namespace std;
 
 #include <vector>
 #include "../utils/config.h"
-#include "gameAction.h"
+#include "../players/Player.h"
 
 struct GameAction;
 
@@ -82,7 +82,7 @@ struct GameState {
     int turn = 0;
 
     vector<GameAction> possibleActions;
-    int staleStreak = 0;
+    GameAction lastAction;
 
     //METHODS:
     void updatePossibleActions();
@@ -96,8 +96,9 @@ struct GameState {
     GameState(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n);
     GameState()=default;
 
-private:
+    void undo(GameAction &action);
 
+private:
 
     void shuffleAndFlip();
 

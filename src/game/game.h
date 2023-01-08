@@ -6,8 +6,7 @@
 
 using namespace std;
 
-#include "gameState.h"
-#include "gameAction.h"
+#include "gameDependencies.h"
 #include "../players/Player.h"
 #include "../utils/config.h"
 

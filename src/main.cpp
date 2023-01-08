@@ -8,7 +8,7 @@ using namespace std;
 
 const string assetsDir = "../assets/";
 
-#define K_THREADNUM 10
+#define K_THREADNUM 5
 
 void runGame(GameState baseGS, Player** players, int* output, int nGames){
     for(int n=0; n<nGames; n++) {
@@ -40,12 +40,12 @@ int main() {
     }
 
     Player* players[K_PNUM];
-    players[0] = new RandomPlayer(0);
-    players[1] = new RandomPlayer(1);
-    players[2] = new RandomPlayer(2);
+    players[0] = new OSLA_V1(0);
+    players[1] = new OSLA_V1(1);
+    players[2] = new OSLA_V1(2);
     players[3] = new OSLA_V1(3);
 
-    int nGames = 100000;
+    int nGames = 1000;
     //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;

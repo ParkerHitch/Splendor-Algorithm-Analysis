@@ -5,8 +5,7 @@
 #ifndef RESEARCH_PLAYER_H
 #define RESEARCH_PLAYER_H
 
-#include "../game/gameAction.h"
-#include "../game/gameState.h"
+#include "../game/gameDependencies.h"
 
 class Player {
 public:
@@ -33,6 +32,14 @@ public:
     GameAction takeAction(GameState& gs) override;
 
     float evaluate(GameState &gs, GameAction& ga);
+};
+
+class MiniMax: public Player {
+public:
+    using Player::Player;
+
+    GameAction takeAction(GameState& gs) override;
+    float minimax(GameState* gs, int depth);
 };
 
 #endif //RESEARCH_PLAYER_H
