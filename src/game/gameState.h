@@ -12,6 +12,7 @@ using namespace std;
 #include "../players/Player.h"
 
 struct GameAction;
+struct gameData;
 
 struct Card {
     int id;
@@ -36,6 +37,8 @@ struct Noble {
     static Noble fromLine(const string& line, int id);
 };
 
+#include "gameData.h"
+
 struct PlayerState {
     int playerNum;
     Card* ownedCards[50];//IDs of cards. Max 50 before u get 15 pts
@@ -57,18 +60,18 @@ struct GameState {
     bool isTerminal = false;//WIN
     bool isStale = false;
 
-    Card deck1[40]{};
+    Card* deck1[40]{};
+    Card* deck2[30]{};
+    Card* deck3[20]{};
     int iD1 = 0; //Which card to draw next. NOT ID. LIST INDEX
-    Card deck2[30]{};
     int iD2 = 0; //Which card to draw next. NOT ID. LIST INDEX
-    Card deck3[20]{};
     int iD3 = 0; //Which card to draw next. NOT ID. LIST INDEX
 
     Card* D1Showing[4]{};
     Card* D2Showing[4]{};
     Card* D3Showing[4]{};
 
-    Noble nobles[10]{};
+    Noble* nobles[10]{};
     int iN = 0;
     Noble* noblesShowing[5]{};
     int     bankAmt0 = 7,
@@ -93,7 +96,7 @@ struct GameState {
 
     static GameState newGame(GameState& gs);
     //Implicit Copy Constructor: GameState(GameState& gs);
-    GameState(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n);
+    GameState(gameData gd);
     GameState()=default;
 
     void undo(GameAction &action);

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include "game/gameDependencies.h"
 #include "game/game.h"
 
 using namespace std;
@@ -10,9 +11,9 @@ const string assetsDir = "../assets/";
 
 #define K_THREADNUM 5
 
-void runGame(GameState baseGS, Player** players, int* output, int nGames){
+void runGame(gameData gd, Player** players, int* output, int nGames){
     for(int n=0; n<nGames; n++) {
-        Game* cg = Game::newFromGS(baseGS)->usePlayers(players);
+        Game* cg = Game::newFromData(gd)->usePlayers(players);
         int w = cg->runGame();
         output[0]++;
         if(cg->hasWinner()){
@@ -30,14 +31,12 @@ int main() {
     ifstream deck3(assetsDir + "default/decks/3.csv");
     ifstream noble(assetsDir + "default/nobles.csv");
 
-    GameState baseGS;
-
-    if (deck1.is_open() && deck2.is_open() && deck3.is_open() && noble.is_open()) {
-        baseGS = GameState(deck1, deck2, deck3, noble);
-    } else {
+    if (!(deck1.is_open() && deck2.is_open() && deck3.is_open() && noble.is_open())) {
         cout << "Unable to open file(s)";
         return 0;
     }
+
+    gameData gd(deck1,deck2,deck3,noble);
 
     Player* players[K_PNUM];
     players[0] = new OSLA_V1(0);
@@ -55,7 +54,7 @@ int main() {
     int output[K_THREADNUM*7] = {};
 
     for(int t = 0; t < K_THREADNUM; t++){
-        threads[t] = thread(runGame, baseGS, players, output + t*7, nGames/K_THREADNUM);
+        threads[t] = thread(runGame, gd, players, output + t*7, nGames/K_THREADNUM);
     }
 
     int barWidth = 50;

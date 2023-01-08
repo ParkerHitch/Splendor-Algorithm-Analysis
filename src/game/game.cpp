@@ -5,9 +5,9 @@
 #include "game.h"
 #include "../display/gameOutput.h"
 
-Game* Game::newFromFiles(ifstream &d1, ifstream &d2, ifstream &d3, ifstream &n) {
+Game* Game::newFromData(gameData& gd) {
     Game* newGame = new Game();
-    newGame->gameState = GameState(d1, d2, d3, n);
+    newGame->gameState = GameState(gd);
     return newGame;
 }
 Game* Game::newFromGS(GameState& gs){

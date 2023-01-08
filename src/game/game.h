@@ -12,7 +12,7 @@ using namespace std;
 
 class Game {
 public:
-    static Game* newFromFiles(ifstream& d1, ifstream& d2, ifstream& d3, ifstream& n);
+    static Game* newFromData(gameData& gd);
     static Game* newFromGS(GameState& gs);
     Game* usePlayer(int n, Player* player);
     Game* usePlayers(Player* players[K_PNUM]);

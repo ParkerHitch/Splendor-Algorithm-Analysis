@@ -1,43 +1,15 @@
 //
 // Created by Parker Hitchcock on 12/16/22.
 //
-#include <fstream>
 #include <random>
 #include "gameState.h"
 #include "gameAction.h"
 
 using namespace std;
 
-GameState::GameState(std::ifstream &d1, std::ifstream &d2, std::ifstream &d3, std::ifstream &n) {
-    string line;
-    getline(d1, line);//Skip comment
-    int id = 0;
-    while (id<40){
-        getline(d1, line);
-        deck1[id] = Card::fromLine(line,id);
-        id++;
-    }
-
-    getline(d2, line);//Skip comment
-    while (id<70){
-        getline(d2, line);
-        deck2[id-40] = Card::fromLine(line,id);
-        id++;
-    }
-
-    getline(d3, line);//Skip comment
-    while (id<90){
-        getline(d3, line);
-        deck3[id-70] = Card::fromLine(line,id);
-        id++;
-    }
-
-    id = 0;
-    getline(n, line);//Skip comment
-    while (id<10){
-        getline(n, line);
-        nobles[id] = Noble::fromLine(line, id);
-        id++;
+GameState::GameState(gameData gd) {
+    for(int i=0; i<90; i++){
+        deck1[i] = &(gd.deck1[i]);
     }
     for(int i=0; i<4; i++){
         playerStates[i].playerNum = i;
@@ -214,18 +186,18 @@ bool GameState::hasValidAction() const {
 }
 
 void GameState::flipCard(int dNum, int newPos) {
-    Card *deck = dNum == 0 ? deck1 : dNum == 1 ? deck2 : deck3;
+    Card **deck = dNum == 0 ? deck1 : dNum == 1 ? deck2 : deck3;
     Card **row = dNum == 0 ? D1Showing : dNum == 1 ? D2Showing : D3Showing;
     int *index = dNum == 0 ? &iD1 : dNum == 1 ? &iD2 : &iD3;
     if (*index >= 40 - 10 * dNum) {
         row[newPos] = nullptr;
         return;
     }
-    row[newPos] = &(deck[*index]);
+    row[newPos] = deck[*index];
     (*index)++;
 }
 void GameState::flipNoble(int newPos) {
-    noblesShowing[newPos] = &(nobles[iN]);
+    noblesShowing[newPos] = nobles[iN];
     iN++;
 }
 
