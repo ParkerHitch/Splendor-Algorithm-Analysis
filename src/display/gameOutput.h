@@ -12,10 +12,10 @@
 using namespace std;
 
 void printC(Card* c);
-void printN(Noble& n);
-void printBank(GameState& gs);
+void printN(Noble* n);
+void printBank(GameState* gs);
 void printPS(PlayerState& ps);
-void printGS(GameState& gs);
+void printGS(GameState* gs);
 
 void printAction(GameAction& pa);
 void printActions(vector<GameAction>& actions);

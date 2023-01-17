@@ -70,9 +70,10 @@ void addValidTake3s(GameState& gs, vector<GameAction>& gas) {
         for(int s: suits)
             (&ga.suit1)[ga.id++] = s;
         gas.push_back(ga);
+    } else {
+        //More than 3 to pick from. Need to generate all possible combinations
+        combinations(ga, 0, r, suits, gas);
     }
-    //More than 3 to pick from. Need to generate all possible combinations
-    combinations(ga, 0, r, suits, gas);
 }
 
 void addValidTake2s(GameState& gs, vector<GameAction>& gas) {
@@ -86,29 +87,37 @@ void addValidTake2s(GameState& gs, vector<GameAction>& gas) {
 void addValidBuysAndReserves(GameState& gs, vector<GameAction>& gas){
     PlayerState& ps = gs.playerStates[gs.turn%4];
     bool canReserve = ps.reservedCards[2] == nullptr;
+    bool getsYellow = gs.bankAmtY > 0;
+    int bankState = 0;
+    for(int s=0; s<6; s++){
+        bankState<<=3;
+        bankState+=(&gs.bankAmt0)[s];
+    }
     if (canReserve) {
         gas.reserve(gas.capacity() + 12);
         for(int c=0; c<12; c++){
             Card* card = gs.D1Showing[c];
             if(card == nullptr)
                 continue;
-            gas.push_back(GameAction{.type=RESERVE, .playerId=ps.playerNum, .id=card->id});
-            if(ps.canAfford(*card))
-                gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .id=card->id});
+            gas.push_back(GameAction{.type=RESERVE, .playerId=ps.playerNum, .suit1=c, .suit2=getsYellow, .id=card->id});
+            if(ps.canAfford(card)){
+                gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .suit1=c, .suit2=bankState, .id=card->id});
+            }
         }
     } else {
         for(int c=0; c<12; c++){
             Card* card = gs.D1Showing[c];
             if (card== nullptr)
                 continue;
-            if(ps.canAfford(*card))
-                gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .id=card->id});
+            if(ps.canAfford(card))
+                gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .suit1=c, .suit2=bankState, .id=card->id});
         }
     }
     for(int c=0; c<3 && ps.reservedCards[c]!=nullptr; c++){
         Card* card = ps.reservedCards[c];
-        if(ps.canAfford(*card))
-            gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .id=card->id});
+        if(ps.canAfford(card)){
+            gas.push_back(GameAction{.type=PURCHASE, .playerId=ps.playerNum, .suit1=12+c, .suit2=bankState, .id=card->id});
+        }
     }
 }
 

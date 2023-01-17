@@ -14,10 +14,10 @@ struct Noble;
 struct gameData{
     gameData(std::ifstream &d1, std::ifstream &d2, std::ifstream &d3, std::ifstream &n);
 
-    Card deck1[40];
-    Card deck2[30];
-    Card deck3[20];
-    Noble nobles[10];
+    Card deck1[40]={};
+    Card deck2[30]={};
+    Card deck3[20]={};
+    Noble nobles[10]={};
 };
 
 #endif //RESEARCH_GAMEDATA_H

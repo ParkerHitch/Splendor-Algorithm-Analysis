@@ -40,6 +40,8 @@ public:
 
     GameAction takeAction(GameState& gs) override;
     float minimax(GameState* gs, int depth);
+private:
+    int d=0;
 };
 
 #endif //RESEARCH_PLAYER_H

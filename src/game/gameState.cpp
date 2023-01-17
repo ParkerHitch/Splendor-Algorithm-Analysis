@@ -2,14 +2,19 @@
 // Created by Parker Hitchcock on 12/16/22.
 //
 #include <random>
+#include <iostream>
 #include "gameState.h"
 #include "gameAction.h"
+#include "../display/gameOutput.h"
 
 using namespace std;
 
-GameState::GameState(gameData gd) {
+GameState::GameState(gameData* gd) {
     for(int i=0; i<90; i++){
-        deck1[i] = &(gd.deck1[i]);
+        deck1[i] = &(gd->deck1[i]);
+    }
+    for(int i=0; i<10; i++){
+        nobles[i] = &(gd->nobles[i]);
     }
     for(int i=0; i<4; i++){
         playerStates[i].playerNum = i;
@@ -17,20 +22,20 @@ GameState::GameState(gameData gd) {
     shuffleAndFlip();
     updatePossibleActions();
 }
-GameState GameState::newGame(GameState &gs) {
-    GameState ng = GameState();
-    memcpy(ng.deck1, gs.deck1, sizeof(deck1));
-    memcpy(ng.deck2, gs.deck2, sizeof(deck2));
-    memcpy(ng.deck3, gs.deck3, sizeof(deck3));
-    memcpy(ng.nobles, gs.nobles, sizeof(deck3));
-    for(int i=0; i<4; i++){
-        ng.playerStates[i].playerNum = i;
-    }
-
-    ng.shuffleAndFlip();
-    ng.updatePossibleActions();
-    return ng;
-}
+//GameState GameState::newGame(GameState &gs) {
+//    GameState ng = GameState();
+//    memcpy(ng.deck1, gs.deck1, sizeof(deck1));
+//    memcpy(ng.deck2, gs.deck2, sizeof(deck2));
+//    memcpy(ng.deck3, gs.deck3, sizeof(deck3));
+//    memcpy(ng.nobles, gs.nobles, sizeof(deck3));
+//    for(int i=0; i<4; i++){
+//        ng.playerStates[i].playerNum = i;
+//    }
+//
+//    ng.shuffleAndFlip();
+//    ng.updatePossibleActions();
+//    return ng;
+//}
 void GameState::shuffleAndFlip(){
     static auto rnd = default_random_engine(default_random_engine(chrono::system_clock::now().time_since_epoch().count()));
     shuffle((deck1), end(deck1), rnd);
@@ -53,19 +58,16 @@ void GameState::applyAction(GameAction &ga) {
             break;
         case TAKE3:
             if (ga.suit1!=-1) {
-                int d1 = min(1, (&bankAmt0)[ga.suit1]); // if bank amt = 0 d1 = 0 else d1 = 1
-                (&bankAmt0)[ga.suit1] -= d1;
-                (&ps.balance0)[ga.suit1] += d1;
+                (&bankAmt0)[ga.suit1] -= 1;
+                (&ps.balance0)[ga.suit1] += 1;
             }
             if(ga.suit2!=-1) {
-                int d2 = min(1, (&bankAmt0)[ga.suit2]);
-                (&bankAmt0)[ga.suit2] -= d2;
-                (&ps.balance0)[ga.suit2] += d2;
+                (&bankAmt0)[ga.suit2] -= 1;
+                (&ps.balance0)[ga.suit2] += 1;
             }
             if(ga.suit3!=-1) {
-                int d3 = min(1, (&bankAmt0)[ga.suit3]);
-                (&bankAmt0)[ga.suit3] -= d3;
-                (&ps.balance0)[ga.suit3] += d3;
+                (&bankAmt0)[ga.suit3] -= 1;
+                (&ps.balance0)[ga.suit3] += 1;
             }
             break;
         case TAKE1:
@@ -80,9 +82,7 @@ void GameState::applyAction(GameAction &ga) {
         case PURCHASE:
             Card **end = ga.type == PURCHASE ? ps.ownedCards : ps.reservedCards;//Where the card ends up
             for (int i = 0; i < 12; i++) {
-                if (D1Showing[i] == nullptr)
-                    continue;
-                if (D1Showing[i]->id == ga.id) {
+                if (D1Showing[i] != nullptr && D1Showing[i]->id == ga.id) {
                     int b = 0;
                     while (end[b] != nullptr)
                         b++;
@@ -106,13 +106,17 @@ void GameState::applyAction(GameAction &ga) {
                         }
                         //Add to discount
                         ps.discounts[D1Showing[i]->suit]++;
+                        ps.pts++;
+                        flipCard(i / 4, i % 4);
+                        goto nobleCheck;
+                    } else {
+                        flipCard(i / 4, i % 4);
+                        return;
                     }
-                    flipCard(i / 4, i % 4);
-                    goto nobleCheck;
                 }
             }
             //Card not in flipped cards. Must be purchasing from reserves bc move is valid
-            for (int c = 0; c < 3; c++)
+            for (int c = 0; c < 3; c++) {
                 if (ps.reservedCards[c]->id == ga.id) {
                     for (int s = 0; s < 5; s++) {
                         //SUBTRACT AMOUNT YOU NEED TO PAY
@@ -134,6 +138,7 @@ void GameState::applyAction(GameAction &ga) {
                     ps.ownedCards[b] = ps.reservedCards[c];
                     //Add to discount
                     ps.discounts[ps.reservedCards[c]->suit]++;
+                    ps.pts++;
                     //Remove & shift left
                     ps.reservedCards[c] = nullptr;
                     while (c < 2) {
@@ -142,37 +147,124 @@ void GameState::applyAction(GameAction &ga) {
                     }
                     ps.reservedCards[2] = nullptr;
                 }
-            break;
-    }
-    //Check for Noble visits
-    nobleCheck:
-    for (int c = 0; c < 5; c++) {
-        if (noblesShowing[c] == nullptr)
-            break;
-
-        for (int s = 0; s < 5; s++)
-            if (ps.discounts[s] < (&(noblesShowing[c]->cost0))[s])
-                goto nextN;
-        //Noble attracted
-        for (Noble *&pn: ps.nobles)
-            if (pn == nullptr) {
-                pn = noblesShowing[c];
-                break;
             }
-        //Remove & shift left
-        noblesShowing[c] = nullptr;
-        while (c < 4) {
-            noblesShowing[c] = noblesShowing[c + 1];
-            c++;
-        }
-        noblesShowing[4] = nullptr;
-        //I am removing this rule for coding's sake break; //ONE PER TURN
-        nextN:;
+            //Check for Noble visits
+            nobleCheck:
+            for (int c = 0; c < 5; c++) {
+                if (noblesShowing[c] == nullptr)
+                    break;
+
+                for (int s = 0; s < 5; s++)
+                    if (ps.discounts[s] < (&(noblesShowing[c]->cost0))[s])
+                        goto nextN;
+                //Noble attracted
+                for (Noble *&pn: ps.nobles)
+                    if (pn == nullptr) {
+                        pn = noblesShowing[c];
+                        ps.pts += pn->points;
+                        break;
+                    }
+                //Remove & shift left
+                noblesShowing[c] = nullptr;
+                while (c < 4) {
+                    noblesShowing[c] = noblesShowing[c + 1];
+                    c++;
+                }
+                noblesShowing[4] = nullptr;
+                //I am removing this rule for coding's sake break; //ONE PER TURN
+                nextN:;
+            }
+            break;
     }
 }
 
-void GameState::undo(GameAction &action) {
-
+void GameState::undo(GameAction &ga) {
+    reduceTurn(); // Now the turn of the player who took the action to undo
+    PlayerState &ps = playerStates[ga.playerId];
+    switch (ga.type) {
+        case ERROR:
+            //WTF?!?!
+            isTerminal = true;
+            break;
+        case TAKE3:
+            if (ga.suit1!=-1) {
+                (&ps.balance0)[ga.suit1] -= 1;
+                (&bankAmt0)[ga.suit1] += 1;
+            }
+            if(ga.suit2!=-1) {
+                (&ps.balance0)[ga.suit2] -= 1;
+                (&bankAmt0)[ga.suit2] += 1;
+            }
+            if(ga.suit3!=-1) {
+                (&ps.balance0)[ga.suit3] -= 1;
+                (&bankAmt0)[ga.suit3] += 1;
+            }
+            break;
+        case TAKE1:
+            (&ps.balance0)[ga.suit1] -= 2;
+            (&bankAmt0)[ga.suit1] += 2;
+            break;
+        case RESERVE:
+            bankAmtY += ga.suit2;
+            ps.balanceY -= ga.suit2;
+            //Remove from player's reserved cards
+            //(Assuming that we are undoing the most recent action)
+            for (int i = 2; i >= 0; i--) {
+                if (ps.reservedCards[i] != nullptr) {
+                    Card* card = ps.reservedCards[i];
+                    ps.reservedCards[i] = nullptr;
+                    D1Showing[ga.suit1] = card; // Put card back onto table
+                    ((&iD1)[ga.suit1/4])--; // Decrease index
+                    return;
+                }
+            }
+            break;
+        case PURCHASE:
+            //Remove from owned cards
+            int nCards = 0;
+            for(int c : ps.discounts){
+                nCards += c;
+            }
+            Card* card = ps.ownedCards[nCards-1];
+            ps.discounts[card->suit]--;
+            ps.pts--;
+            ps.ownedCards[nCards-1] = nullptr;
+            for (int s = 0; s < 6; s++) {
+                int amtPaid = (&bankAmt0)[s] - (ga.suit2>>((5-s)*3))&7;
+                (&ps.balance0)[s] += amtPaid;
+                (&bankAmt0)[s] -= amtPaid;
+            }
+            //Remove nobles
+            for(int i=0; ps.nobles[i]!=nullptr;){
+                if (ps.discounts[card->suit] < (&(ps.nobles[i]->cost0))[card->suit]) {
+                    //Put noble back
+                    for(auto & n : noblesShowing){
+                        if(n == nullptr) {
+                            n = ps.nobles[i];
+                            break;
+                        }
+                    }
+                    int c = i;
+                    ps.pts -= ps.nobles[c]->points;
+                    ps.nobles[c] = nullptr;
+                    while (c < 4) {
+                        ps.nobles[c] = ps.nobles[c + 1];
+                        c++;
+                    }
+                    ps.nobles[4] = nullptr;
+                } else {
+                    i++;
+                }
+            }
+            if(ga.suit1 > 11){
+                for(int p=2; p>ga.suit1-12; p--)
+                    ps.reservedCards[p] = ps.reservedCards[p-1];
+                ps.reservedCards[ga.suit1-12] = card;
+            } else {
+                D1Showing[ga.suit1] = card; // Put card back onto table
+                ((&iD1)[ga.suit1/4])--; // Decrease index
+            }
+    }
 }
 
 void GameState::updatePossibleActions() {
@@ -189,11 +281,11 @@ void GameState::flipCard(int dNum, int newPos) {
     Card **deck = dNum == 0 ? deck1 : dNum == 1 ? deck2 : deck3;
     Card **row = dNum == 0 ? D1Showing : dNum == 1 ? D2Showing : D3Showing;
     int *index = dNum == 0 ? &iD1 : dNum == 1 ? &iD2 : &iD3;
-    if (*index >= 40 - 10 * dNum) {
-        row[newPos] = nullptr;
-        return;
-    }
-    row[newPos] = deck[*index];
+//    if (*index >= 40 - 10 * dNum) {
+//        row[newPos] = nullptr;
+//        return;
+//    }
+    row[newPos] = *index >= 40 - 10 * dNum ? nullptr: deck[*index];
     (*index)++;
 }
 void GameState::flipNoble(int newPos) {
@@ -203,6 +295,9 @@ void GameState::flipNoble(int newPos) {
 
 void GameState::advanceTurn() {
     turn++;
+}
+void GameState::reduceTurn() {
+    turn--;
 }
 
 Card Card::fromLine(const string &line, int id) {
@@ -232,19 +327,12 @@ Noble Noble::fromLine(const string &line, int id) {
 //######### PLAYER #########
 
 bool PlayerState::checkWin() {
-    int b = 0;
-    int pts = 0;
-    while (ownedCards[b] != nullptr)
-        pts += ownedCards[b++]->points;//Add points & increment id
-    b = 0;
-    while (b < 5 && nobles[b] != nullptr)
-        pts += nobles[b++]->points;//Add points & increment id
     return pts >= 15;
 }
-bool PlayerState::canAfford(Card &card) {
+bool PlayerState::canAfford(Card* card) {
     int diff = 0; //# of coins missing
     for (int suit = 0; suit < 5; suit++)
-        diff += max(0, (&card.cost0)[suit] - discounts[suit] - //HAVE TO PAY
+        diff += max(0, (&(card->cost0))[suit] - discounts[suit] - //HAVE TO PAY
                        (&balance0)[suit]); //HAVE IN BANK
     return diff <= balanceY;
 }

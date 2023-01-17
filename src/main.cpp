@@ -9,12 +9,24 @@ using namespace std;
 
 const string assetsDir = "../assets/";
 
+//#define DEBUG
+
+#ifdef DEBUG
+#define K_THREADNUM 1
+#else
 #define K_THREADNUM 5
+#endif
+
 
 void runGame(gameData gd, Player** players, int* output, int nGames){
     for(int n=0; n<nGames; n++) {
-        Game* cg = Game::newFromData(gd)->usePlayers(players);
-        int w = cg->runGame();
+        Game* cg = Game::newFromData(&gd)->usePlayers(players);
+        int w =
+        #ifdef DEBUG
+                cg->runGame();
+        #else
+                cg->runGame();
+        #endif
         output[0]++;
         if(cg->hasWinner()){
             output[w+1]++;
@@ -36,15 +48,15 @@ int main() {
         return 0;
     }
 
-    gameData gd(deck1,deck2,deck3,noble);
+    const gameData gd(deck1,deck2,deck3,noble);
 
     Player* players[K_PNUM];
     players[0] = new OSLA_V1(0);
     players[1] = new OSLA_V1(1);
     players[2] = new OSLA_V1(2);
-    players[3] = new OSLA_V1(3);
+    players[3] = new MiniMax(3);
 
-    int nGames = 1000;
+    int nGames = 100;
     //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;
@@ -60,6 +72,7 @@ int main() {
     int barWidth = 50;
     int totalProgress = 0;
 
+#ifndef DEBUG
     while (totalProgress<nGames){
         totalProgress = 0;
         for(int t = 0; t < K_THREADNUM; t++)
@@ -75,6 +88,7 @@ int main() {
         std::cout << "] " << int((float)totalProgress/(float)nGames * 100.0) << " %\r";
         std::cout.flush();
     }
+#endif
 
     for(int i=0; auto& th: threads){
         th.join();

@@ -5,16 +5,16 @@
 #include "game.h"
 #include "../display/gameOutput.h"
 
-Game* Game::newFromData(gameData& gd) {
+Game* Game::newFromData(gameData* gd) {
     Game* newGame = new Game();
     newGame->gameState = GameState(gd);
     return newGame;
 }
-Game* Game::newFromGS(GameState& gs){
-    Game* newGame = new Game();
-    newGame->gameState = GameState::newGame(gs);
-    return newGame;
-}
+//Game* Game::newFromGS(GameState& gs){
+//    Game* newGame = new Game();
+//    newGame->gameState = GameState::newGame(gs);
+//    return newGame;
+//}
 
 Game* Game::usePlayer(int n, Player *player) {
     players[n] = player;
@@ -38,10 +38,10 @@ int Game::runGame() {
 }
 
 int Game::runGameDebug() {
-    printGS(gameState);
+    printGS(&gameState);
     while (!gameState.isTerminal && !gameState.isStale) {
         takeTurn();
-        printGS(gameState);
+        printGS(&gameState);
     }
     cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
     return (gameState.turn-1)%4;

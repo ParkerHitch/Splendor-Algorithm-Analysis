@@ -43,6 +43,7 @@ struct PlayerState {
     int playerNum;
     Card* ownedCards[50];//IDs of cards. Max 50 before u get 15 pts
     int discounts[5]={};
+    int pts = 0;
     Card* reservedCards[3];
     Noble* nobles[5];//Max
     int balance0 = 0;
@@ -52,7 +53,7 @@ struct PlayerState {
     int balance4 = 0;
     int balanceY = 0;
 
-    bool canAfford(Card& card);
+    bool canAfford(Card* card);
     bool checkWin();
 };
 
@@ -84,8 +85,8 @@ struct GameState {
     PlayerState playerStates[K_PNUM]{};
     int turn = 0;
 
-    vector<GameAction> possibleActions;
     GameAction lastAction;
+    vector<GameAction> possibleActions;
 
     //METHODS:
     void updatePossibleActions();
@@ -93,10 +94,10 @@ struct GameState {
     bool isValidAction(GameAction& ga);
     void applyAction(GameAction& ga);
     void advanceTurn();
+    void reduceTurn();
 
-    static GameState newGame(GameState& gs);
     //Implicit Copy Constructor: GameState(GameState& gs);
-    GameState(gameData gd);
+    GameState(gameData* gd);
     GameState()=default;
 
     void undo(GameAction &action);

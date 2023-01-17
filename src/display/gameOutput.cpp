@@ -6,36 +6,36 @@
 #include "consoleColors.h"
 using namespace std;
 
-void printGS(GameState& gs){
+void printGS(GameState* gs){
     //system("clear");
     cout << BLD UDL "GAME STATE" RST << endl <<
-         "Round " << gs.turn / K_PNUM << " - Player" << gs.turn % K_PNUM << " turn" << endl;
+         "Round " << gs->turn / K_PNUM << " - Player" << gs->turn % K_PNUM << " turn" << endl;
     printBank(gs);
-    cout << BLD UDL "Deck1 - " << 40-gs.iD1 << " left" RST << endl;
-    for(Card*& c : gs.D1Showing)
+    cout << BLD UDL "Deck1 - " << 40-gs->iD1 << " left" RST << endl;
+    for(Card* c : gs->D1Showing)
         printC(c);
-    cout << BLD UDL "Deck2 - " << 30-gs.iD2 << " left" RST << endl;
-    for(Card*& c : gs.D2Showing)
+    cout << BLD UDL "Deck2 - " << 30-gs->iD2 << " left" RST << endl;
+    for(Card* c : gs->D2Showing)
         printC(c);
-    cout << BLD UDL "Deck3 - " << 20-gs.iD3 << " left" RST << endl;
-    for(Card*& c : gs.D3Showing)
+    cout << BLD UDL "Deck3 - " << 20-gs->iD3 << " left" RST << endl;
+    for(Card* c : gs->D3Showing)
         printC(c);
-    cout << BLD UDL "Nobles" RST << endl;// - " << 10-gs.iN << " left" RST << endl;
-    for(int n=0; n<5&&gs.noblesShowing[n]!=nullptr; n++)
-        printN(*gs.noblesShowing[n]);
+    cout << BLD UDL "Nobles" RST << endl;// - " << 10-gs->iN << " left" RST << endl;
+    for(int n=0; n<5&&gs->noblesShowing[n]!=nullptr; n++)
+        printN(gs->noblesShowing[n]);
     cout << endl;
-    for(PlayerState& ps : gs.playerStates)
+    for(PlayerState& ps : gs->playerStates)
         printPS(ps);
 }
 
-void printBank(GameState& gs){
+void printBank(GameState* gs){
     cout << BLD "Bank: " RST <<
-        gs.bankAmt0 <<
-        " " FG_BLU << gs.bankAmt1 <<
-        " " FG_GRN << gs.bankAmt2 <<
-        " " FG_RED << gs.bankAmt3 <<
-        " " FG_BLK << gs.bankAmt4 <<
-        " " FG_YEL << gs.bankAmtY << RST << endl;
+        gs->bankAmt0 <<
+        " " FG_BLU << gs->bankAmt1 <<
+        " " FG_GRN << gs->bankAmt2 <<
+        " " FG_RED << gs->bankAmt3 <<
+        " " FG_BLK << gs->bankAmt4 <<
+        " " FG_YEL << gs->bankAmtY << RST << endl;
 }
 
 void printC(Card* card){
@@ -53,16 +53,16 @@ void printC(Card* card){
             FG_BLK << c.cost4 << RST "]" << endl;
 }
 
-void printN(Noble& n){
-    cout << "[" BLD FG_WHT << n.id
+void printN(Noble* n){
+    cout << "[" BLD FG_WHT << n->id
          //NO SUIT 0 BC IT LOOKS BETTER ON MY MACHINE
-         << RST "-" BLD <<  n.points
+         << RST "-" BLD <<  n->points
          << RST ": "
-         << n.cost0 <<
-         FG_BLU << n.cost1 <<
-         FG_GRN << n.cost2 <<
-         FG_RED << n.cost3 <<
-         FG_BLK << n.cost4 << RST "]" << endl;
+         << n->cost0 <<
+         FG_BLU << n->cost1 <<
+         FG_GRN << n->cost2 <<
+         FG_RED << n->cost3 <<
+         FG_BLK << n->cost4 << RST "]" << endl;
 }
 
 void printPS(PlayerState& ps){
@@ -87,7 +87,7 @@ void printPS(PlayerState& ps){
         cout << "  " UDL "nobles" RST << endl;
     for(int i=0; ps.nobles[i]!=nullptr; i++) {
         cout << "    ";
-        printN(*ps.nobles[i]);
+        printN(ps.nobles[i]);
     }
 }
 

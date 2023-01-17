@@ -5,3 +5,12 @@ COLOR KEY:
 2 - (g)reen
 3 - (r)ed
 4 - blac(k)
+
+
+CONVENTION FOR ORDERING POSSIBLE ACTIONS:
+All take3s.
+ lowest number first
+ -1s filling from right
+All take1s
+ low to high
+All purchases
