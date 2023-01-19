@@ -9,7 +9,7 @@ using namespace std;
 
 const string assetsDir = "../assets/";
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #define K_THREADNUM 1
@@ -20,7 +20,7 @@ const string assetsDir = "../assets/";
 
 void runGame(gameData gd, Player** players, int* output, int nGames){
     for(int n=0; n<nGames; n++) {
-        Game* cg = Game::newFromData(&gd)->usePlayers(players);
+        Game* cg = (new Game())->usePlayers(players);
         int w =
         #ifdef DEBUG
                 cg->runGame();
@@ -37,6 +37,7 @@ void runGame(gameData gd, Player** players, int* output, int nGames){
     }
 }
 
+gameData* GameState::data = nullptr;
 int main() {
     ifstream deck1(assetsDir + "default/decks/1.csv");
     ifstream deck2(assetsDir + "default/decks/2.csv");
@@ -48,7 +49,8 @@ int main() {
         return 0;
     }
 
-    const gameData gd(deck1,deck2,deck3,noble);
+    gameData gd(deck1,deck2,deck3,noble);
+    GameState::data = &gd;
 
     Player* players[K_PNUM];
     players[0] = new OSLA_V1(0);
@@ -56,7 +58,7 @@ int main() {
     players[2] = new OSLA_V1(2);
     players[3] = new MiniMax(3);
 
-    int nGames = 100;
+    int nGames = 5;
     //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;

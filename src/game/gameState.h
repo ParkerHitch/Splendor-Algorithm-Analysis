@@ -58,6 +58,7 @@ struct PlayerState {
 };
 
 struct GameState {
+    static gameData* data;
     bool isTerminal = false;//WIN
     bool isStale = false;
 
@@ -98,7 +99,7 @@ struct GameState {
 
     //Implicit Copy Constructor: GameState(GameState& gs);
     GameState(gameData* gd);
-    GameState()=default;
+    GameState() : GameState(data) {};
 
     void undo(GameAction &action);
 

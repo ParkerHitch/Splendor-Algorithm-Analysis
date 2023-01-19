@@ -10,6 +10,7 @@
 using namespace std;
 
 GameState::GameState(gameData* gd) {
+    data = gd;
     for(int i=0; i<90; i++){
         deck1[i] = &(gd->deck1[i]);
     }
@@ -22,6 +23,7 @@ GameState::GameState(gameData* gd) {
     shuffleAndFlip();
     updatePossibleActions();
 }
+
 //GameState GameState::newGame(GameState &gs) {
 //    GameState ng = GameState();
 //    memcpy(ng.deck1, gs.deck1, sizeof(deck1));
