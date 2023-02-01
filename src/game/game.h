@@ -12,8 +12,7 @@ using namespace std;
 
 class Game {
 public:
-    static Game* newFromData(gameData* gd);
-    static Game* newFromGS(GameState& gs);
+    static Game* continueFromGS(GameState& gs);
     Game* usePlayer(int n, Player* player);
     Game* usePlayers(Player* players[K_PNUM]);
 
@@ -23,7 +22,11 @@ public:
     int getTurn();
     bool hasWinner();
 
+    Game() = default;
+
 private:
+    Game(GameState &gs);
+
     GameState gameState;
     Player* players[K_PNUM];
 

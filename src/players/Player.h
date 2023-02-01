@@ -6,6 +6,7 @@
 #define RESEARCH_PLAYER_H
 
 #include "../game/gameDependencies.h"
+#include "agents/common/tree.h"
 
 class Player {
 public:
@@ -34,6 +35,14 @@ public:
     float evaluate(GameState &gs, GameAction& ga);
 };
 
+class OSLA_V2: public Player {
+public:
+    using Player::Player;
+    GameAction takeAction(GameState& gs) override;
+
+    float evaluate(GameState &gs, GameAction& ga);
+};
+
 class MiniMax: public Player {
 public:
     using Player::Player;
@@ -42,6 +51,16 @@ public:
     float minimax(GameState* gs, int depth);
 private:
     int d=0;
+};
+
+class MonteCarlo: public Player {
+public:
+    using Player::Player;
+
+    GameAction takeAction(GameState& gs) override;
+private:
+    int d=0;
+    tree t;
 };
 
 #endif //RESEARCH_PLAYER_H

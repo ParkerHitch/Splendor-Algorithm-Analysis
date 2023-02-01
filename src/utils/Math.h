@@ -7,4 +7,6 @@
 
 int factorial(int a);
 
+int randRange(int lower, upper);
+
 #endif //RESEARCH_MATH_H

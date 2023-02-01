@@ -5,10 +5,13 @@
 #include "game.h"
 #include "../display/gameOutput.h"
 
-Game* Game::newFromData(gameData* gd) {
-    Game* newGame = new Game();
-    newGame->gameState = GameState(gd);
-    return newGame;
+Game::Game(GameState& gs) {
+    gameState = gs;
+}
+
+Game *Game::continueFromGS(GameState& gs) {
+    Game* g = new Game(gs);
+    return g;
 }
 //Game* Game::newFromGS(GameState& gs){
 //    Game* newGame = new Game();

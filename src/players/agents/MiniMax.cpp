@@ -10,12 +10,24 @@
 float evaluate(GameState* gs, int playerID){
     PlayerState& ps = gs->playerStates[playerID];
 
-    float score = (float)ps.pts*3;
-    score += 2.0f * (float)ps.discounts[0];
-    score += 2.0f * (float)ps.discounts[1];
-    score += 2.0f * (float)ps.discounts[2];
-    score += 2.0f * (float)ps.discounts[3];
-    score += 2.0f * (float)ps.discounts[4];
+//    float score = (float)ps.pts*3;
+//    score += 2.0f * (float)ps.discounts[0];
+//    score += 2.0f * (float)ps.discounts[1];
+//    score += 2.0f * (float)ps.discounts[2];
+//    score += 2.0f * (float)ps.discounts[3];
+//    score += 2.0f * (float)ps.discounts[4];
+//    score += 0.2f * (float)ps.balance0;
+//    score += 0.2f * (float)ps.balance1;
+//    score += 0.2f * (float)ps.balance2;
+//    score += 0.2f * (float)ps.balance3;
+//    score += 0.2f * (float)ps.balance4;
+//    score += 0.4f * (float)ps.balanceY;
+    float score = 0;
+    score += (float)ps.discounts[0];
+    score += (float)ps.discounts[1];
+    score += (float)ps.discounts[2];
+    score += (float)ps.discounts[3];
+    score += (float)ps.discounts[4];
     score += 0.2f * (float)ps.balance0;
     score += 0.2f * (float)ps.balance1;
     score += 0.2f * (float)ps.balance2;
@@ -73,11 +85,11 @@ float MiniMax::minimax(GameState* gs, int depth){
                 gs->updatePossibleActions();
 
                 float score;
-                if(depth==1) {
-                    score = evalAction(gs, ga);
-                } else {
+//                if(depth==1) {
+//                    score = evalAction(gs, ga);
+//                } else {
                     score = minimax(gs, depth - 1);
-                }
+//                }
             #ifdef MINIMAX_DEBUG
                 std::cout << std::string(d, ' ') << "Undo - ";
                 printAction(ga);
