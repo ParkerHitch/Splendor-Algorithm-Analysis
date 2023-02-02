@@ -5,11 +5,11 @@
 #include "game.h"
 #include "../display/gameOutput.h"
 
-Game::Game(GameState& gs) {
-    gameState = gs;
+Game::Game(GameState* gs) {
+    gameState = *gs;
 }
 
-Game *Game::continueFromGS(GameState& gs) {
+Game *Game::continueFromGS(GameState* gs) {
     Game* g = new Game(gs);
     return g;
 }

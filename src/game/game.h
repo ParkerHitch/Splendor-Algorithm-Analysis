@@ -12,7 +12,7 @@ using namespace std;
 
 class Game {
 public:
-    static Game* continueFromGS(GameState& gs);
+    static Game* continueFromGS(GameState* gs);
     Game* usePlayer(int n, Player* player);
     Game* usePlayers(Player* players[K_PNUM]);
 
@@ -25,7 +25,7 @@ public:
     Game() = default;
 
 private:
-    Game(GameState &gs);
+    Game(GameState* gs);
 
     GameState gameState;
     Player* players[K_PNUM];

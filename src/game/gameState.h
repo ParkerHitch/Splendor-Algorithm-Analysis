@@ -9,7 +9,6 @@ using namespace std;
 
 #include <vector>
 #include "../utils/config.h"
-#include "../players/Player.h"
 
 struct GameAction;
 struct gameData;

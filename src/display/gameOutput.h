@@ -6,8 +6,7 @@
 #define RESEARCH_GAMEOUTPUT_H
 
 #include <vector>
-#include "../game/gameState.h"
-#include "../game/gameAction.h"
+#include "../game/gameDependencies.h"
 
 using namespace std;
 

@@ -6,7 +6,7 @@
 #define RESEARCH_GAMEDATA_H
 
 #include <fstream>
-#include "gameState.h"
+#include "gameDependencies.h"
 
 struct Card;
 struct Noble;

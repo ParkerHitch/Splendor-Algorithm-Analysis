@@ -59,6 +59,8 @@ public:
 
     GameAction takeAction(GameState& gs) override;
 private:
+    static Player* simulatedPlayers[4];
+    float UCB(node*n);
     int d=0;
     tree t;
 };

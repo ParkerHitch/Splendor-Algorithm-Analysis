@@ -7,6 +7,8 @@
 
 int factorial(int a);
 
-int randRange(int lower, upper);
+int randRange(int lower, int upper);
+unsigned int rightmostSetBitPos(unsigned int n);
+unsigned int leftmostSetBitPos(unsigned int n);
 
 #endif //RESEARCH_MATH_H

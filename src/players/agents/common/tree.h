@@ -14,9 +14,14 @@ struct node{
     node* parent;
     GameAction actionTaken;//to get to this node
 
-    int data;
+    int wins;
+    int sims;
 
     vector<node*> children;
+    int nChildren;
+
+    explicit node(GameAction ga);
+    void addChild(int index, GameAction ga);
 };
 
 struct tree{
@@ -26,8 +31,9 @@ struct tree{
     void back();
     void selectBase();
     void setBase();
-    boolean atBase();
+    bool atBase();
     void recursiveDelete(node* n);
+    void backpropagate(bool win, node* startingNode);
 };
 
 
