@@ -18,22 +18,26 @@ struct node{
     int sims;
 
     vector<node*> children;
-    int nChildren;
+    int nChildren();
 
     explicit node(GameAction ga);
     void addChild(int index, GameAction ga);
+    void deleteChildren();
+    void print(int indent);
 };
 
 struct tree{
-    node* base;
-    node* selected;
+    node* base = nullptr;
+    node* selected = nullptr;
     void select(int index);
     void back();
     void selectBase();
     void setBase();
     bool atBase();
-    void recursiveDelete(node* n);
+    void clear();
+    static void recursiveDelete(node* n);
     void backpropagate(bool win, node* startingNode);
+    void print();
 };
 
 

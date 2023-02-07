@@ -13,7 +13,7 @@ int factorial(int a){
 int randRange(int lower, int upper){
     std::random_device rd; // obtain a random number from hardware
     std::mt19937 gen(rd()); // seed the generator
-    std::uniform_int_distribution<> distr(lower, upper); // define the range
+    std::uniform_int_distribution<> distr(lower, upper-1); // define the range
     return distr(gen);
 }
 
@@ -22,7 +22,7 @@ unsigned int rightmostSetBitPos(unsigned int n){
         return 0;
     // Position variable initialize with 1
     // m variable is used to check the set bit
-    int position = 1;
+    int position = 0;
     int m = 1;
 
     while (!(n & m)) {

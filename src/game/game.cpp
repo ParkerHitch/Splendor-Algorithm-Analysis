@@ -5,6 +5,11 @@
 #include "game.h"
 #include "../display/gameOutput.h"
 
+template<typename Base, typename T>
+inline bool instanceof(const T *ptr) {
+    return dynamic_cast<const Base*>(ptr) != nullptr;
+}
+
 Game::Game(GameState* gs) {
     gameState = *gs;
 }
@@ -59,6 +64,12 @@ void Game::takeTurn() {
         } while (!gameState.isValidAction(pa));
         //printAction(pa);
         gameState.applyAction(pa);
+//        for(Player* p: players){
+//            p->updateState(pa);
+////            if(instanceof<MonteCarlo>(p)){
+////                (dynamic_cast<MonteCarlo*>(p))->printTree();
+////            }
+//        }
     } else {
         if (gameState.lastAction.playerId == gameState.turn % K_PNUM)
             gameState.isStale=true;

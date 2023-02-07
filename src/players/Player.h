@@ -13,6 +13,8 @@ public:
     const int id;
     explicit Player(int i);
     virtual GameAction takeAction(GameState& gs)=0;
+
+    virtual void updateState(GameAction& ga){};
 };
 
 class HumanPlayer: public Player {
@@ -58,11 +60,13 @@ public:
     using Player::Player;
 
     GameAction takeAction(GameState& gs) override;
+    void updateState(GameAction& ga) override;
+    void printTree();
 private:
     static Player* simulatedPlayers[4];
     float UCB(node*n);
     int d=0;
-    tree t;
+    tree t{};
 };
 
 #endif //RESEARCH_PLAYER_H

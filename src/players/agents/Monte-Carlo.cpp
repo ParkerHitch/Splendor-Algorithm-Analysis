@@ -5,6 +5,7 @@
 #include "../../utils/Math.h"
 #include "../../game/game.h"
 #include <cmath>
+#include <iostream>
 #define UCB_CONST sqrt(2)
 
 float MonteCarlo::UCB(node* n){
@@ -17,16 +18,21 @@ Player* MonteCarlo::simulatedPlayers[] = {new RandomPlayer(0),
                                                 new RandomPlayer(3)};
 
 GameAction MonteCarlo::takeAction(GameState &gs) {
-
-    if (t.base == nullptr){
-        t.base = new node(gs.lastAction);
-    }
+    t.base = new node(gs.lastAction);
     t.base->children = vector<node*>(gs.possibleActions.size(), nullptr);
+    /*else if(t.base->nChildren() != gs.possibleActions.size()){
+        t.base->deleteChildren();
+        t.base->children = vector<node*>(gs.possibleActions.size(), nullptr);
+    }*/
     int nsims = 0;
-    while(nsims < 100) {
+    while(nsims < 500) {
         GameState *test = new GameState(gs); //TODO: Test if this or undoing is more efficient
         //Selection
-        while (t.selected->nChildren == test->possibleActions.size()) { //While node is fully expanded
+        t.selectBase();
+        while (t.selected->nChildren() == test->possibleActions.size()) { //While node is fully expanded
+            if(t.selected->nChildren() == 0){
+                goto sim;
+            }
             //Select child of fully expanded node that meets ucb
             //All children have at least one sim
             unsigned int maxI = 0;
@@ -66,15 +72,16 @@ GameAction MonteCarlo::takeAction(GameState &gs) {
         int newNode;
         do {
             newNode = randRange(0,test->possibleActions.size());
-        } while (t.selected->children[newNode]!= nullptr);
+        } while (t.selected->children[newNode]!=nullptr);
         //Create node
         t.selected->addChild(newNode, test->possibleActions[newNode]);
         t.select(newNode);
         test->applyAction(t.selected->actionTaken);
         test->advanceTurn();
         test->updatePossibleActions();
-        t.selected->children = vector<node*>(gs.possibleActions.size(), nullptr);
+        t.selected->children = vector<node*>(test->possibleActions.size(), nullptr);
         //Simulate game
+        sim:
         Game* sim = Game::continueFromGS(test)->usePlayers(MonteCarlo::simulatedPlayers);
         bool getWin = sim->runGame() == id;
         t.backpropagate(getWin, t.selected);
@@ -108,5 +115,31 @@ GameAction MonteCarlo::takeAction(GameState &gs) {
         }
         maxI = rightmostSetBitPos(maxI);
     }
+    t.clear();
+    //t.print();
     return gs.possibleActions[maxI];
+}
+
+void MonteCarlo::updateState(GameAction &ga) {
+    t.selectBase();
+    if(t.base == nullptr)
+        return;
+    int i=0;
+    for(node*c:t.base->children){
+        if(c != nullptr)
+            if(c->actionTaken == ga){
+                t.select(i);
+                t.setBase();
+                return;
+            }
+        i++;
+    }
+    //No valid moves
+    t.recursiveDelete(t.base);
+    t.base = nullptr;
+    t.selected = nullptr;
+}
+
+void MonteCarlo::printTree() {
+    t.print();
 }

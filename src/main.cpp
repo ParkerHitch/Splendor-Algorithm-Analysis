@@ -14,7 +14,7 @@ const string assetsDir = "../assets/";
 #ifdef DEBUG
 #define K_THREADNUM 1
 #else
-#define K_THREADNUM 5
+#define K_THREADNUM 1
 #endif
 
 
@@ -53,12 +53,12 @@ int main() {
     GameState::data = &gd;
 
     Player* players[K_PNUM];
-    players[0] = new OSLA_V1(0);
-    players[1] = new OSLA_V1(1);
-    players[2] = new OSLA_V1(2);
-    players[3] = new MiniMax(3);
+    players[0] = new RandomPlayer(0);
+    players[1] = new RandomPlayer(1);
+    players[2] = new RandomPlayer(2);
+    players[3] = new RandomPlayer(3);
 
-    int nGames = 5;
+    int nGames = 100;
     //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;
