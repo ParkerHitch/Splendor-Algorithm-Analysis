@@ -24,12 +24,7 @@ GameAction randomAction() {
     return ga;
 }
 
-GameAction randomValidAction(GameState& gs) {
-    vector<GameAction> gas = validActions(gs);
-    return randomValidAction(gas);
-}
-
-GameAction randomValidAction(vector<GameAction> gas){
+GameAction randomValidAction(vector<GameAction>& gas){
     if(start) {
         srand(time(nullptr));
         start = false;

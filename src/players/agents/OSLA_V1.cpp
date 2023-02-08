@@ -20,7 +20,7 @@ float OSLA_V1::evaluate(GameState& gs, GameAction& ga){
     score += 0.2f * (float)ps.balance3;
     score += 0.2f * (float)ps.balance4;
     score += 0.4f * (float)ps.balanceY;
-    free(test);
+    delete test;
     return score;
 }
 

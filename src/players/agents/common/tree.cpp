@@ -28,7 +28,7 @@ void tree::recursiveDelete(node* n){
             continue;
         recursiveDelete(c);
     }
-    free(n);
+    delete n;
 }
 
 void tree::clear() {

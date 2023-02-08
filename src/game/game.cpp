@@ -2,6 +2,7 @@
 // Created by Parker Hitchcock on 11/3/22.
 //
 #include <iostream>
+#include <random>
 #include "game.h"
 #include "../display/gameOutput.h"
 
@@ -37,10 +38,20 @@ Game* Game::usePlayers(Player* pls[K_PNUM]) {
     return this;
 }
 
+Game* Game::randomizePlayerOrder(){
+    static auto rnd = default_random_engine(default_random_engine(chrono::system_clock::now().time_since_epoch().count()));
+    shuffle(players, end(players), rnd);
+    for(int i=0; i<K_PNUM; i++){
+        players[i]->id = i;
+    }
+    return this;
+}
+
 int Game::runGame() {
     while (!gameState.isTerminal && !gameState.isStale) {
         takeTurn();
     }
+    //cout<<gameState.possibleActions.size()<<endl;
     //cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
     return (gameState.turn-1)%4;
 }

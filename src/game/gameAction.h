@@ -37,7 +37,7 @@ struct GameAction{
 
 GameAction randomAction();
 GameAction randomValidAction(GameState& gs);
-GameAction randomValidAction(vector<GameAction> gas);
+GameAction randomValidAction(vector<GameAction>& gas);
 
 vector<GameAction> validActions(GameState& gs);
 

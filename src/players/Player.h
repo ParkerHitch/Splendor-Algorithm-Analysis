@@ -10,7 +10,7 @@
 
 class Player {
 public:
-    const int id;
+    int id;
     explicit Player(int i);
     virtual GameAction takeAction(GameState& gs)=0;
 

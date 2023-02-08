@@ -9,13 +9,12 @@
 
 using namespace std;
 
-GameState::GameState(gameData* gd) {
-    data = gd;
+GameState::GameState() {
     for(int i=0; i<90; i++){
-        deck1[i] = &(gd->deck1[i]);
+        deck1[i] = &(GameState::data->deck1[i]);
     }
     for(int i=0; i<10; i++){
-        nobles[i] = &(gd->nobles[i]);
+        nobles[i] = &(GameState::data->nobles[i]);
     }
     for(int i=0; i<4; i++){
         playerStates[i].playerNum = i;

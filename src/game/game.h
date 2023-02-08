@@ -15,6 +15,7 @@ public:
     static Game* continueFromGS(GameState* gs);
     Game* usePlayer(int n, Player* player);
     Game* usePlayers(Player* players[K_PNUM]);
+    Game* randomizePlayerOrder();
 
     int runGame();
     int runGameDebug();

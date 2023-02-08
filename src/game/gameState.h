@@ -97,8 +97,7 @@ struct GameState {
     void reduceTurn();
 
     //Implicit Copy Constructor: GameState(GameState& gs);
-    GameState(gameData* gd);
-    GameState() : GameState(data) {};
+    GameState();
 
     void undo(GameAction &action);
 

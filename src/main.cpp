@@ -20,7 +20,7 @@ const string assetsDir = "../assets/";
 
 void runGame(gameData gd, Player** players, int* output, int nGames){
     for(int n=0; n<nGames; n++) {
-        Game* cg = (new Game())->usePlayers(players);
+        Game* cg = (new Game())->usePlayers(players)->randomizePlayerOrder();
         int w =
         #ifdef DEBUG
                 cg->runGame();
@@ -33,8 +33,12 @@ void runGame(gameData gd, Player** players, int* output, int nGames){
             output[5] += cg->getTurn(); //Nturns
         } else
             output[6]++; //Stale
-        free(cg);
+        delete cg;
     }
+}
+
+template<typename a1, typename a2> void compareAgents(gameData gd, Player** players, int* output, int nGames){
+    rungame(gd, {new a1(0), new a1(1), new a2(2), new a2(3)}, players, output, nGames);
 }
 
 gameData* GameState::data = nullptr;
@@ -56,9 +60,9 @@ int main() {
     players[0] = new RandomPlayer(0);
     players[1] = new RandomPlayer(1);
     players[2] = new RandomPlayer(2);
-    players[3] = new RandomPlayer(3);
+    players[3] = new OSLA_V1(3);
 
-    int nGames = 100;
+    int nGames = 1;
     //int gPerThread = nGames/K_THREADNUM;
     int results[K_PNUM] = {};
     long tNum = 0;
@@ -108,7 +112,7 @@ int main() {
     cout << stale;
 
     for(Player* p : players)
-        free(p);
+        delete p;
 
     return 0;
 }

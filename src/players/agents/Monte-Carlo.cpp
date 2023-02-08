@@ -85,8 +85,8 @@ GameAction MonteCarlo::takeAction(GameState &gs) {
         Game* sim = Game::continueFromGS(test)->usePlayers(MonteCarlo::simulatedPlayers);
         bool getWin = sim->runGame() == id;
         t.backpropagate(getWin, t.selected);
-        free(sim);
-        free(test);
+        delete sim;
+        delete test;
         nsims++;
     }
     unsigned int maxI = 0;

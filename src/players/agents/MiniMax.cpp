@@ -144,7 +144,7 @@ GameAction MiniMax::takeAction(GameState &gs) {
         test->advanceTurn();
         test->updatePossibleActions();
         float score = minimax(test, 1);
-        free(test);
+        delete test;
         if(score>max){
             max = score;
             maxI = i;
