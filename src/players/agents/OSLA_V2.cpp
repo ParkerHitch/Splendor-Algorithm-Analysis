@@ -2,6 +2,7 @@
 // Created by Parker Hitchcock on 1/20/23.
 //
 #include "../Player.h"
+#include "../../utils/Math.h"
 
 float OSLA_V2::evaluate(GameState& gs, GameAction& ga){
     GameState* test = new GameState(gs);
@@ -31,13 +32,32 @@ GameAction OSLA_V2::takeAction(GameState &gs) {
     vector<GameAction> &gas = gs.possibleActions;
     float max = 0;
     int maxI = 0;
+    int n = 0;
     for(int i=0; GameAction ga: gas){
         float score = evaluate(gs, ga);
         if(score>max){
+            maxI = 1<<i; //i-th bit is 1
             max = score;
-            maxI = i;
+            n=1;
+        } else if(score==max){
+            maxI = maxI | (1<<i); //flip i-th bit to 1
+            n++;
         }
         i++;
     }
+    if(n==1){
+        maxI = rightmostSetBitPos(maxI);
+    } else {
+        int h = randRange(0, n);
+        //Select the n-th set bit
+        for (int j=0; j<h; j++) {
+            maxI &= maxI-1; // remove the least significant bit (the furthest right)
+        }
+        maxI = rightmostSetBitPos(maxI);
+    }
     return gas[maxI];
+}
+
+string OSLA_V2::name() {
+    return "OSLA_V2";
 }

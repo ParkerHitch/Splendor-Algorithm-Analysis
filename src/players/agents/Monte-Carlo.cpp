@@ -143,3 +143,7 @@ void MonteCarlo::updateState(GameAction &ga) {
 void MonteCarlo::printTree() {
     t.print();
 }
+
+string MonteCarlo::name() {
+    return "MonteCarlo";
+}

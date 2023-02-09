@@ -7,3 +7,7 @@ GameAction RandomPlayer::takeAction(GameState &gs) {
     GameAction ga = randomValidAction(gs.possibleActions);
     return ga;
 }
+
+string RandomPlayer::name() {
+    return "RandomPlayer";
+}

@@ -23,6 +23,11 @@ public:
     int getTurn();
     bool hasWinner();
 
+    template<typename type>
+    bool playerIs(int id){
+        return (dynamic_cast<type*>(players[id]))!=nullptr;
+    }
+
     Game() = default;
 
 private:

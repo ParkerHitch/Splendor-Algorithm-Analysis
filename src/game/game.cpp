@@ -6,11 +6,6 @@
 #include "game.h"
 #include "../display/gameOutput.h"
 
-template<typename Base, typename T>
-inline bool instanceof(const T *ptr) {
-    return dynamic_cast<const Base*>(ptr) != nullptr;
-}
-
 Game::Game(GameState* gs) {
     gameState = *gs;
 }

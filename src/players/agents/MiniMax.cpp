@@ -4,6 +4,7 @@
 #include "../Player.h"
 #include <iostream>
 #include "../../display/gameOutput.h"
+#include "../../utils/Math.h"
 
 //#define MINIMAX_DEBUG
 
@@ -138,19 +139,36 @@ GameAction MiniMax::takeAction(GameState &gs) {
     vector<GameAction> &gas = gs.possibleActions;
     float max = 0;
     int maxI = 0;
+    int n = 0;
     for(int i=0; GameAction ga: gas){
         GameState* test = new GameState(gs);
         test->applyAction(gas[i]);
         test->advanceTurn();
         test->updatePossibleActions();
         float score = minimax(test, 1);
-        delete test;
         if(score>max){
+            maxI = 1<<i; //i-th bit is 1
             max = score;
-            maxI = i;
+            n=1;
+        } else if(score==max){
+            maxI = maxI | (1<<i); //flip i-th bit to 1
+            n++;
         }
         i++;
     }
-    printAction(gas[maxI]);
+    if(n==1){
+        maxI = rightmostSetBitPos(maxI);
+    } else {
+        int h = randRange(0, n);
+        //Select the n-th set bit
+        for (int j=0; j<h; j++) {
+            maxI &= maxI-1; // remove the least significant bit (the furthest right)
+        }
+        maxI = rightmostSetBitPos(maxI);
+    }
     return gas[maxI];
+}
+
+string MiniMax::name() {
+    return "MiniMax";
 }

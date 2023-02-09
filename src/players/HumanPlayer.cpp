@@ -76,3 +76,7 @@ GameAction HumanPlayer::takeAction(GameState &gs) {
     }
     return ga;
 }
+
+string HumanPlayer::name() {
+    return "HumanPlayer";
+}
