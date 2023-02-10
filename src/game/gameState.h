@@ -8,6 +8,7 @@
 using namespace std;
 
 #include <vector>
+#include <string>
 #include "../utils/config.h"
 
 struct GameAction;

@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <sstream>
+#include <iomanip>
 #include "game/gameDependencies.h"
 #include "game/game.h"
 
@@ -12,8 +13,8 @@ const string assetsDir = "../assets/";
 const string outputDir = "../output/";
 
 //#define DEBUG
-#define AGENT1 OSLA_V1
-#define AGENT2 OSLA_V2
+#define AGENT1 MiniMax
+#define AGENT2 MonteCarlo
 #define GAME_NUM 100
 
 

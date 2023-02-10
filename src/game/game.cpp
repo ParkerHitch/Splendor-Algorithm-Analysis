@@ -3,6 +3,7 @@
 //
 #include <iostream>
 #include <random>
+#include <chrono>
 #include "game.h"
 #include "../display/gameOutput.h"
 
