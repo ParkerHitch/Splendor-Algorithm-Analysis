@@ -5,17 +5,22 @@
 #include "../../utils/Math.h"
 #include "../../game/game.h"
 #include <cmath>
+#include <format>
 #include <iostream>
 #define UCB_CONST sqrt(2)
 
 float MonteCarlo::UCB(node* n){
-    return (((float)n->wins)/((float)n->sims)) + UCB_CONST * sqrt(log(t.base->sims)/(float)n->sims);
+    return (((float)n->wins)/((float)n->sims)) + expParam * sqrt(log(t.base->sims)/(float)n->sims);
 }
 
 Player* MonteCarlo::simulatedPlayers[] = {new RandomPlayer(0),
                                                 new RandomPlayer(1),
                                                 new RandomPlayer(2),
                                                 new RandomPlayer(3)};
+
+MonteCarlo::MonteCarlo(int id, float explorationParam, int nSims) : Player(id), expParam(explorationParam), nGames(nSims) {}
+
+MonteCarlo::MonteCarlo(int id) : Player(id), expParam(sqrt(2)), nGames(1000) {}
 
 GameAction MonteCarlo::takeAction(GameState &gs) {
     t.base = new node(gs.lastAction);
@@ -25,7 +30,7 @@ GameAction MonteCarlo::takeAction(GameState &gs) {
         t.base->children = vector<node*>(gs.possibleActions.size(), nullptr);
     }*/
     int nsims = 0;
-    while(nsims < 500) {
+    while(nsims < nGames) {
         GameState *test = new GameState(gs); //TODO: Test if this or undoing is more efficient
         //Selection
         t.selectBase();

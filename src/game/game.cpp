@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <unistd.h>
 #include "game.h"
 #include "../display/gameOutput.h"
 
@@ -55,10 +56,12 @@ int Game::runGame() {
 int Game::runGameDebug() {
     printGS(&gameState);
     while (!gameState.isTerminal && !gameState.isStale) {
+        sleep(1);
         takeTurn();
         printGS(&gameState);
     }
     cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
+    sleep(10);
     return (gameState.turn-1)%4;
 }
 

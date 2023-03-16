@@ -41,6 +41,18 @@ public:
     float evaluate(GameState &gs, GameAction& ga);
 };
 
+class RLBasic_V1: public Player {
+public:
+    using Player::Player;
+    GameAction takeAction(GameState& gs) override;
+    static string name();
+
+    float evaluate(GameState &gs, GameAction& ga);
+
+    float weights[4][14];
+
+};
+
 class OSLA_V2: public Player {
 public:
     using Player::Player;
@@ -64,12 +76,19 @@ private:
 class MonteCarlo: public Player {
 public:
     using Player::Player;
+    MonteCarlo(int id, float explorationParam, int nSims);
+    MonteCarlo(int id);
+
     static string name();
 
     GameAction takeAction(GameState& gs) override;
     void updateState(GameAction& ga) override;
     void printTree();
 private:
+
+    int nGames;
+    const float expParam;
+
     static Player* simulatedPlayers[4];
     float UCB(node*n);
     int d=0;
