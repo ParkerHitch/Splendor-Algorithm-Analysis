@@ -13,6 +13,7 @@ using namespace std;
 
 struct GameAction;
 struct gameData;
+struct gameReplay;
 
 struct Card {
     int id;
@@ -108,6 +109,11 @@ private:
 
     void flipCard(int dNum, int newPos);
     void flipNoble(int newPos);
+};
+
+struct gameReplay {
+    GameState baseGS;
+    vector<GameAction> allActionsTaken;
 };
 
 #endif //RESEARCH_GAMESTATE_H

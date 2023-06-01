@@ -19,6 +19,7 @@ public:
 
     int runGame();
     int runGameDebug();
+    int runGameWithReplay();
 
     int getTurn();
     bool hasWinner();
@@ -30,13 +31,15 @@ public:
 
     Game() = default;
 
+    gameReplay replay;
+
 private:
     Game(GameState* gs);
 
     GameState gameState;
     Player* players[K_PNUM];
 
-    void takeTurn();
+    void takeTurn(bool saveToReplay);
 };
 
 #endif //RESEARCH_GAME_H

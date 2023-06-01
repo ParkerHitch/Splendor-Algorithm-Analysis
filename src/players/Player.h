@@ -8,6 +8,11 @@
 #include "../game/gameDependencies.h"
 #include "agents/common/tree.h"
 
+struct probabilityDistr {
+    int size;
+    double* start;
+};
+
 class Player {
 public:
     int id;
@@ -44,12 +49,21 @@ public:
 class RLBasic_V1: public Player {
 public:
     using Player::Player;
+//    explicit RLBasic_V1(int i);
     GameAction takeAction(GameState& gs) override;
-    static string name();
+    static string name() { return "RLBASIC_V1"; };
 
-    float evaluate(GameState &gs, GameAction& ga);
+    static float evaluate(int pId, GameState &gs);
+    float score(GameState &gs, GameAction& ga);
+    probabilityDistr generateProbablities(GameState &gs);
 
-    float weights[4][14];
+    static float weights[4][14];
+    static float learningConst;
+    static string assetDir;
+
+    static void readWeights();
+    static void updateWeights(int pId, gameReplay &replay, float result);
+    static void writeWeights();
 
 };
 

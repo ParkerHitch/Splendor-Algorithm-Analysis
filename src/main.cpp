@@ -218,6 +218,10 @@ void compareMonteCarlos(gameData& gd, int nGames, ofstream& outputFile){
 }
 
 gameData* GameState::data = nullptr;
+float RLBasic_V1::weights[4][14] = {};
+float RLBasic_V1::learningConst = 0;
+string RLBasic_V1::assetDir = assetsDir;
+
 int main() {
     ifstream deck1(assetsDir + "default/decks/1.csv");
     ifstream deck2(assetsDir + "default/decks/2.csv");
@@ -238,10 +242,24 @@ int main() {
     oss << std::put_time(&tm, "Output_%Y-%m-%d.txt");
     auto fileName = oss.str();
 
+    RLBasic_V1::readWeights();
+
     ofstream outFile(outputDir + fileName);
 
-    //compareMonteCarlos(gd, GAME_NUM, outFile);
-    /*{
+    {
+        Game *cg = (new Game())->usePlayer(0, new RLBasic_V1(0))
+                ->usePlayer(1, new RLBasic_V1(1))
+                ->usePlayer(2, new RLBasic_V1(2))
+                ->usePlayer(3, new RLBasic_V1(3));
+        auto start = chrono::high_resolution_clock::now();
+        cg->runGame();
+        auto stop = chrono::high_resolution_clock::now();
+        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+        double avgDur = ((double)duration) / ((double)cg->getTurn());
+        cout << "Time taken by RL: " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+        delete cg;
+    }
+    {
         Game *cg = (new Game())->usePlayer(0, new OSLA_V1(0))
                 ->usePlayer(1, new OSLA_V1(1))
                 ->usePlayer(2, new OSLA_V1(2))
@@ -253,95 +271,185 @@ int main() {
         double avgDur = ((double)duration) / ((double)cg->getTurn());
         cout << "Time taken by OSLA: " << duration << " microseconds. (" << avgDur << " avg)" << endl;
         delete cg;
-    }*/
-    while (true) {
+    }
+    {
         Game *cg = (new Game())->usePlayer(0, new RandomPlayer(0))
                 ->usePlayer(1, new RandomPlayer(1))
                 ->usePlayer(2, new RandomPlayer(2))
                 ->usePlayer(3, new RandomPlayer(3));
-        cg->runGameDebug();
-        delete cg;
-    }/*{
-        Game *cg = (new Game())->usePlayer(0, new MiniMax(0))
-                ->usePlayer(1, new MiniMax(1))
-                ->usePlayer(2, new MiniMax(2))
-                ->usePlayer(3, new MiniMax(3));
         auto start = chrono::high_resolution_clock::now();
         cg->runGame();
         auto stop = chrono::high_resolution_clock::now();
         unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
         double avgDur = ((double)duration) / ((double)cg->getTurn());
-        cout << "Time taken by OSLA: " << duration << " microseconds. (" << avgDur << " avg)" << endl;
-        delete cg;
-    }{
-        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0, sqrt(2), 500))
-                ->usePlayer(1, new MonteCarlo(1,sqrt(2), 500))
-                ->usePlayer(2, new MonteCarlo(2,sqrt(2), 500))
-                ->usePlayer(3, new MonteCarlo(3,sqrt(2), 500));
-        auto start = chrono::high_resolution_clock::now();
-        cg->runGame();
-        auto stop = chrono::high_resolution_clock::now();
-        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
-        double avgDur = ((double)duration) / ((double)cg->getTurn());
-        cout << "Time taken by MCTS (500): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
-        delete cg;
-    }{
-        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0,sqrt(2), 1000))
-                ->usePlayer(1, new MonteCarlo(1,sqrt(2), 1000))
-                ->usePlayer(2, new MonteCarlo(2,sqrt(2), 1000))
-                ->usePlayer(3, new MonteCarlo(3,sqrt(2), 1000));
-        auto start = chrono::high_resolution_clock::now();
-        cg->runGame();
-        auto stop = chrono::high_resolution_clock::now();
-        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
-        double avgDur = ((double)duration) / ((double)cg->getTurn());
-        cout << "Time taken by MCTS (1000): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+        cout << "Time taken by RANDOM: " << duration << " microseconds. (" << avgDur << " avg)" << endl;
         delete cg;
     }
-        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0, sqrt(2), 10000))
-                ->usePlayer(1, new MonteCarlo(1, sqrt(2), 10000))
-                ->usePlayer(2, new MonteCarlo(2, sqrt(2), 10000))
-                ->usePlayer(3, new MonteCarlo(3, sqrt(2), 10000));
-        auto start = chrono::high_resolution_clock::now();
-        cg->runGame();
-        auto stop = chrono::high_resolution_clock::now();
-        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
-        double avgDur = ((double)duration) / ((double)cg->getTurn());
-        cout << "Time taken by MCTS (10000): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
-        delete cg;
-    }{
-        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0, sqrt(2), 50000))
-                ->usePlayer(1, new MonteCarlo(1, sqrt(2), 50000))
-                ->usePlayer(2, new MonteCarlo(2, sqrt(2), 50000))
-                ->usePlayer(3, new MonteCarlo(3, sqrt(2), 50000));
-        auto start = chrono::high_resolution_clock::now();
-        cg->runGame();
-        auto stop = chrono::high_resolution_clock::now();
-        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
-        double avgDur = ((double)duration) / ((double)cg->getTurn());
-        cout << "Time taken by MCTS (50000): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
-        delete cg;
-    } */
+
+//    int output[7] = {};
 //
+//    Player* players[4] = {new RLBasic_V1(0),
+//                       new RandomPlayer(1),
+//                       new RandomPlayer(2),
+//                       new OSLA_V1(3),};
 //
-//    compare<RandomPlayer, RandomPlayer>(gd, GAME_NUM, outFile);
+//    for(int n=0; n<100000; n++) {
+//        Game* cg = (new Game())->usePlayers(players);
+//        int w = cg->runGameWithReplay();
+//        output[0]++;
+//        if(cg->hasWinner()){
+//            output[w+1]++;
+//            output[5] += cg->getTurn(); //Nturns
+//
+//        } else
+//            output[6]++; //Stale
+//        RLBasic_V1::updateWeights(0, cg->replay, w==0?1:-0.1);
+//        delete cg;
+//    }
+//    cout << output[1] << ",";
+//    cout << output[2] << ",";
+//    cout << output[3] << ",";
+//    cout << output[4] << ",";
+
+    //compare<RandomPlayer, RandomPlayer>(gd, GAME_NUM, outFile);
 //    compare<RandomPlayer, OSLA_V1>(gd, GAME_NUM, outFile);
 //    compare<RandomPlayer, MiniMax>(gd, GAME_NUM, outFile);
 //    compare<RandomPlayer, MonteCarlo>(gd, GAME_NUM, outFile);
-//
+//    compare<RandomPlayer, RLBasic_V1>(gd, GAME_NUM, outFile);
+
 //    compare<OSLA_V1, OSLA_V1>(gd, GAME_NUM, outFile);
 //    compare<OSLA_V1, MiniMax>(gd, GAME_NUM, outFile);
 //    compare<OSLA_V1, MonteCarlo>(gd, GAME_NUM, outFile);
-//
-//    compare<MiniMax, MiniMax>(gd, GAME_NUM, outFile);
-//    compare<MiniMax, MonteCarlo>(gd, GAME_NUM, outFile);
-//
-//    compare<MonteCarlo, MonteCarlo>(gd, GAME_NUM, outFile);
-//
-//    outFile.close();
+//    compare<OSLA_V1, RLBasic_V1>(gd, GAME_NUM, outFile);
 
-    return 0;
+    //compare<MiniMax, MiniMax>(gd, GAME_NUM, outFile);
+//    compare<MiniMax, MonteCarlo>(gd, GAME_NUM, outFile);
+//    compare<MiniMax, RLBasic_V1>(gd, GAME_NUM, outFile);
+
+
+    //compare<MonteCarlo, MonteCarlo>(gd, GAME_NUM, outFile);
+//    compare<MonteCarlo, RLBasic_V1>(gd, GAME_NUM, outFile);
+
+    outFile.close();
+
 }
+
+//int main() {
+//    ifstream deck1(assetsDir + "default/decks/1.csv");
+//    ifstream deck2(assetsDir + "default/decks/2.csv");
+//    ifstream deck3(assetsDir + "default/decks/3.csv");
+//    ifstream noble(assetsDir + "default/nobles.csv");
+//
+//    if (!(deck1.is_open() && deck2.is_open() && deck3.is_open() && noble.is_open())) {
+//        cout << "Unable to open file(s)";
+//        return 0;
+//    }
+//
+//    gameData gd(deck1, deck2, deck3, noble);
+//    GameState::data = &gd;
+//
+//    auto t = std::time(nullptr);
+//    auto tm = *std::localtime(&t);
+//    std::ostringstream oss;
+//    oss << std::put_time(&tm, "Output_%Y-%m-%d.txt");
+//    auto fileName = oss.str();
+//
+//    ofstream outFile(outputDir + fileName);
+//
+//    //compareMonteCarlos(gd, GAME_NUM, outFile);
+//    /*{
+//        Game *cg = (new Game())->usePlayer(0, new OSLA_V1(0))
+//                ->usePlayer(1, new OSLA_V1(1))
+//                ->usePlayer(2, new OSLA_V1(2))
+//                ->usePlayer(3, new OSLA_V1(3));
+//        auto start = chrono::high_resolution_clock::now();
+//        cg->runGame();
+//        auto stop = chrono::high_resolution_clock::now();
+//        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+//        double avgDur = ((double)duration) / ((double)cg->getTurn());
+//        cout << "Time taken by OSLA: " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+//        delete cg;
+//    }*//*{
+//        Game *cg = (new Game())->usePlayer(0, new MiniMax(0))
+//                ->usePlayer(1, new MiniMax(1))
+//                ->usePlayer(2, new MiniMax(2))
+//                ->usePlayer(3, new MiniMax(3));
+//        auto start = chrono::high_resolution_clock::now();
+//        cg->runGame();
+//        auto stop = chrono::high_resolution_clock::now();
+//        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+//        double avgDur = ((double)duration) / ((double)cg->getTurn());
+//        cout << "Time taken by OSLA: " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+//        delete cg;
+//    }{
+//        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0, sqrt(2), 500))
+//                ->usePlayer(1, new MonteCarlo(1,sqrt(2), 500))
+//                ->usePlayer(2, new MonteCarlo(2,sqrt(2), 500))
+//                ->usePlayer(3, new MonteCarlo(3,sqrt(2), 500));
+//        auto start = chrono::high_resolution_clock::now();
+//        cg->runGame();
+//        auto stop = chrono::high_resolution_clock::now();
+//        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+//        double avgDur = ((double)duration) / ((double)cg->getTurn());
+//        cout << "Time taken by MCTS (500): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+//        delete cg;
+//    }{
+//        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0,sqrt(2), 1000))
+//                ->usePlayer(1, new MonteCarlo(1,sqrt(2), 1000))
+//                ->usePlayer(2, new MonteCarlo(2,sqrt(2), 1000))
+//                ->usePlayer(3, new MonteCarlo(3,sqrt(2), 1000));
+//        auto start = chrono::high_resolution_clock::now();
+//        cg->runGame();
+//        auto stop = chrono::high_resolution_clock::now();
+//        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+//        double avgDur = ((double)duration) / ((double)cg->getTurn());
+//        cout << "Time taken by MCTS (1000): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+//        delete cg;
+//    }
+//        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0, sqrt(2), 10000))
+//                ->usePlayer(1, new MonteCarlo(1, sqrt(2), 10000))
+//                ->usePlayer(2, new MonteCarlo(2, sqrt(2), 10000))
+//                ->usePlayer(3, new MonteCarlo(3, sqrt(2), 10000));
+//        auto start = chrono::high_resolution_clock::now();
+//        cg->runGame();
+//        auto stop = chrono::high_resolution_clock::now();
+//        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+//        double avgDur = ((double)duration) / ((double)cg->getTurn());
+//        cout << "Time taken by MCTS (10000): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+//        delete cg;
+//    }{
+//        Game *cg = (new Game())->usePlayer(0, new MonteCarlo(0, sqrt(2), 50000))
+//                ->usePlayer(1, new MonteCarlo(1, sqrt(2), 50000))
+//                ->usePlayer(2, new MonteCarlo(2, sqrt(2), 50000))
+//                ->usePlayer(3, new MonteCarlo(3, sqrt(2), 50000));
+//        auto start = chrono::high_resolution_clock::now();
+//        cg->runGame();
+//        auto stop = chrono::high_resolution_clock::now();
+//        unsigned int duration = chrono::duration_cast<chrono::microseconds>(stop - start).count();
+//        double avgDur = ((double)duration) / ((double)cg->getTurn());
+//        cout << "Time taken by MCTS (50000): " << duration << " microseconds. (" << avgDur << " avg)" << endl;
+//        delete cg;
+//    } */
+////
+////
+//    compare<RandomPlayer, RLBasic_V1>(gd, GAME_NUM, outFile);
+////    compare<RandomPlayer, OSLA_V1>(gd, GAME_NUM, outFile);
+////    compare<RandomPlayer, MiniMax>(gd, GAME_NUM, outFile);
+////    compare<RandomPlayer, MonteCarlo>(gd, GAME_NUM, outFile);
+////
+////    compare<OSLA_V1, OSLA_V1>(gd, GAME_NUM, outFile);
+////    compare<OSLA_V1, MiniMax>(gd, GAME_NUM, outFile);
+////    compare<OSLA_V1, MonteCarlo>(gd, GAME_NUM, outFile);
+////
+////    compare<MiniMax, MiniMax>(gd, GAME_NUM, outFile);
+////    compare<MiniMax, MonteCarlo>(gd, GAME_NUM, outFile);
+////
+////    compare<MonteCarlo, MonteCarlo>(gd, GAME_NUM, outFile);
+////
+////    outFile.close();
+//
+//    return 0;
+//}
 //
 //void runGame(gameData gd, Player** players, int* output, int nGames){
 //    for(int n=0; n<nGames; n++) {

@@ -46,7 +46,18 @@ Game* Game::randomizePlayerOrder(){
 
 int Game::runGame() {
     while (!gameState.isTerminal && !gameState.isStale) {
-        takeTurn();
+        takeTurn(false);
+    }
+    //cout<<gameState.possibleActions.size()<<endl;
+    //cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
+    return (gameState.turn-1)%4;
+}
+
+int Game::runGameWithReplay() {
+    replay.baseGS = gameState;
+    replay.allActionsTaken = std::vector<GameAction>();
+    while (!gameState.isTerminal && !gameState.isStale) {
+        takeTurn(true);
     }
     //cout<<gameState.possibleActions.size()<<endl;
     //cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
@@ -57,7 +68,7 @@ int Game::runGameDebug() {
     printGS(&gameState);
     while (!gameState.isTerminal && !gameState.isStale) {
         sleep(1);
-        takeTurn();
+        takeTurn(false);
         printGS(&gameState);
     }
     cout << "Player" << (gameState.turn-1)%4 << " WINS!!" << endl;
@@ -65,7 +76,7 @@ int Game::runGameDebug() {
     return (gameState.turn-1)%4;
 }
 
-void Game::takeTurn() {
+void Game::takeTurn(bool saveToReplay) {
     GameAction pa;//PLAYER ACTION
     if(gameState.hasValidAction()) {
         //printActions(gameState.possibleActions);
@@ -73,6 +84,8 @@ void Game::takeTurn() {
             pa = players[gameState.turn % K_PNUM]->takeAction(gameState);
         } while (!gameState.isValidAction(pa));
         //printAction(pa);
+        if(saveToReplay)
+            replay.allActionsTaken.push_back(pa);
         gameState.applyAction(pa);
 //        for(Player* p: players){
 //            p->updateState(pa);
